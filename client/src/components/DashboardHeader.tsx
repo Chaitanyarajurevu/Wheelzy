@@ -12,10 +12,8 @@ import {
   ChevronDown,
   LogOut,
   UserCheck,
-  RefreshCw,
   ExternalLink,
   ShieldAlert,
-  Check,
 } from "lucide-react";
 import { type Role, roleConfig } from "@/lib/roles";
 import { useAuth } from "@/context/AuthContext";
@@ -34,13 +32,12 @@ export default function DashboardHeader({
   subtitle,
   onToggleMobileMenu,
 }: DashboardHeaderProps) {
-  const { user, logout, switchRole } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
   const config = roleConfig[role];
 
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [roleSwitcherOpen, setRoleSwitcherOpen] = useState(false);
 
   // Load real notifications from dataStore
   const notifications = dataStore.getNotifications(role, user?.id);
@@ -98,71 +95,6 @@ export default function DashboardHeader({
           <span>{user?.campus || "UC Berkeley Hub"}</span>
         </div>
 
-        {/* Quick Demo Role Switcher Dropdown */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => {
-              setRoleSwitcherOpen(!roleSwitcherOpen);
-              setNotificationsOpen(false);
-              setUserMenuOpen(false);
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-200 bg-white hover:bg-emerald-50 text-xs font-bold text-emerald-700 shadow-2xs transition-all cursor-pointer"
-            title="Switch authenticated role for demo testing"
-          >
-            <RefreshCw className="w-3.5 h-3.5 text-emerald-500" />
-            <span className="hidden sm:inline">Role:</span>
-            <span className="capitalize">{role === "system_admin" ? "Admin" : role}</span>
-            <ChevronDown size={12} className="text-emerald-400" />
-          </button>
-
-          {roleSwitcherOpen && (
-            <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-              <div className="px-3 py-1.5 text-[10px] font-bold tracking-wider text-gray-400 uppercase">
-                Demo Role Switcher
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  switchRole("renter");
-                  setRoleSwitcherOpen(false);
-                }}
-                className={`w-full flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-xl text-left transition-colors cursor-pointer ${role === "renter" ? "bg-emerald-50 text-emerald-700 font-bold" : "text-gray-700 hover:bg-gray-50"
-                  }`}
-              >
-                <span>🎓 Student Renter</span>
-                {role === "renter" && <Check size={14} className="text-emerald-600" />}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  switchRole("owner");
-                  setRoleSwitcherOpen(false);
-                }}
-                className={`w-full flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-xl text-left transition-colors cursor-pointer ${role === "owner" ? "bg-emerald-50 text-emerald-700 font-bold" : "text-gray-700 hover:bg-gray-50"
-                  }`}
-              >
-                <span>🚲 Vehicle Owner</span>
-                {role === "owner" && <Check size={14} className="text-emerald-600" />}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  switchRole("system_admin");
-                  setRoleSwitcherOpen(false);
-                }}
-                className={`w-full flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-xl text-left transition-colors cursor-pointer ${role === "system_admin" ? "bg-emerald-50 text-emerald-700 font-bold" : "text-gray-700 hover:bg-gray-50"
-                  }`}
-              >
-                <span>🛡️ System Admin</span>
-                {role === "system_admin" && <Check size={14} className="text-emerald-600" />}
-              </button>
-            </div>
-          )}
-        </div>
-
         {/* Notifications Popover */}
         <div className="relative">
           <button
@@ -171,7 +103,6 @@ export default function DashboardHeader({
             onClick={() => {
               setNotificationsOpen(!notificationsOpen);
               setUserMenuOpen(false);
-              setRoleSwitcherOpen(false);
             }}
             className="relative w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-gray-600 hover:text-emerald-700 hover:bg-emerald-50 hover:border-emerald-200 transition-colors cursor-pointer"
           >
@@ -240,7 +171,6 @@ export default function DashboardHeader({
             onClick={() => {
               setUserMenuOpen(!userMenuOpen);
               setNotificationsOpen(false);
-              setRoleSwitcherOpen(false);
             }}
             className="flex items-center gap-2 p-1 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
           >

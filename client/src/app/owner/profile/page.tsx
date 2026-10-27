@@ -26,7 +26,7 @@ import { CAMPUS_OPTIONS } from "@/data/mockVehicles";
 import { dataStore } from "@/lib/dataStore";
 
 export default function OwnerProfilePage() {
-  const { user, updateUserProfile, switchRole } = useAuth();
+  const { user, updateUserProfile } = useAuth();
   const ownerId = user?.id || "usr-owner-marcus";
 
   const ownerVehicles = dataStore.getOwnerVehicles(ownerId);
@@ -135,14 +135,6 @@ export default function OwnerProfilePage() {
               <PlusCircle size={13} />
               <span>Add Vehicle Listing</span>
             </Link>
-
-            <button
-              type="button"
-              onClick={() => switchRole("renter")}
-              className="px-3 py-1.5 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-semibold transition-colors flex items-center gap-1.5 border border-gray-200"
-            >
-              <span>Switch to Renter View</span>
-            </button>
           </div>
         </div>
 

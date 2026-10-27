@@ -24,7 +24,7 @@ import { toast } from "sonner";
 import { dataStore } from "@/lib/dataStore";
 
 export default function AdminProfilePage() {
-  const { user, updateUserProfile, switchRole } = useAuth();
+  const { user, updateUserProfile } = useAuth();
   const auditLogs = dataStore.getAuditLogs().slice(0, 5);
 
   const [name, setName] = useState(user?.name || "Alex Rivera");
@@ -120,29 +120,6 @@ export default function AdminProfilePage() {
               <p className="text-[11px] text-gray-400 flex items-center gap-1.5">
                 <MapPin size={11} className="text-emerald-500" /> {user?.campus || "Wheelzy HQ & Campus Command"}
               </p>
-            </div>
-          </div>
-
-          {/* Quick Demo Portal Switchers */}
-          <div className="flex flex-wrap sm:flex-col items-start sm:items-end gap-2">
-            <span className="text-[11px] text-gray-400">Test other role interfaces:</span>
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => switchRole("renter")}
-                className="px-3 py-1.5 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-semibold transition-colors flex items-center gap-1 border border-gray-200"
-              >
-                <GraduationCap size={13} />
-                <span>Renter View</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => switchRole("owner")}
-                className="px-3 py-1.5 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-semibold transition-colors flex items-center gap-1 border border-gray-200"
-              >
-                <Car size={13} />
-                <span>Host View</span>
-              </button>
             </div>
           </div>
         </div>

@@ -24,7 +24,7 @@ import { toast } from "sonner";
 import { CAMPUS_OPTIONS } from "@/data/mockVehicles";
 
 export default function RenterProfilePage() {
-  const { user, updateUserProfile, switchRole } = useAuth();
+  const { user, updateUserProfile } = useAuth();
 
   const [name, setName] = useState(user?.name || "Priya Nair");
   const [phone, setPhone] = useState(user?.phone || "+1 (510) 931-4422");
@@ -118,19 +118,6 @@ export default function RenterProfilePage() {
                 <MapPin size={11} className="text-emerald-500" /> {user?.campus || "UC Berkeley"} · {user?.collegeYear || "Student"}
               </p>
             </div>
-          </div>
-
-          {/* Quick Portal Switcher */}
-          <div className="flex sm:flex-col items-center sm:items-end gap-2">
-            <span className="text-[11px] text-gray-400">Also have a vehicle to rent?</span>
-            <button
-              type="button"
-              onClick={() => switchRole("owner")}
-              className="px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold transition-colors flex items-center gap-1.5 border border-emerald-200"
-            >
-              <Car size={13} />
-              <span>Switch to Host Portal</span>
-            </button>
           </div>
         </div>
 
