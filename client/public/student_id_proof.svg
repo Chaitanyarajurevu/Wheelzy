@@ -1,0 +1,102 @@
+<svg width="800" height="500" viewBox="0 0 800 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cardBg" x1="0" y1="0" x2="800" y2="500" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#064E3B"/>
+      <stop offset="60%" stop-color="#047857"/>
+      <stop offset="100%" stop-color="#065F46"/>
+    </linearGradient>
+    <linearGradient id="goldHolo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FDE047"/>
+      <stop offset="50%" stop-color="#EAB308"/>
+      <stop offset="100%" stop-color="#CA8A04"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Card Body -->
+  <rect x="0" y="0" width="800" height="500" rx="28" fill="url(#cardBg)"/>
+  <rect x="12" y="12" width="776" height="476" rx="20" fill="none" stroke="#34D399" stroke-width="2" stroke-opacity="0.4"/>
+
+  <!-- Top Banner -->
+  <rect x="0" y="0" width="800" height="96" rx="28" fill="#022C22"/>
+  <rect x="0" y="80" width="800" height="16" fill="#10B981" fill-opacity="0.8"/>
+
+  <!-- University Emblem -->
+  <circle cx="68" cy="48" r="30" fill="#065F46" stroke="#34D399" stroke-width="2"/>
+  <path d="M68 28 L78 44 L58 44 Z M58 48 H78 V66 H58 Z" fill="#F0FDF4"/>
+  <circle cx="68" cy="56" r="4" fill="#34D399"/>
+
+  <!-- Header Text -->
+  <text x="116" y="44" fill="#FFFFFF" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="800" letter-spacing="1">UNIVERSITY CAMPUS IDENTITY</text>
+  <text x="116" y="68" fill="#A7F3D0" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="600" letter-spacing="0.5">OFFICIAL STUDENT VERIFICATION CARD • WHEELZY VERIFIED</text>
+
+  <!-- Hologram Seal -->
+  <rect x="690" y="24" width="72" height="48" rx="8" fill="url(#goldHolo)" opacity="0.9"/>
+  <text x="726" y="54" text-anchor="middle" fill="#713F12" font-family="sans-serif" font-size="10" font-weight="900" letter-spacing="0.5">SECURE</text>
+
+  <!-- Photo Box Container -->
+  <rect x="48" y="130" width="180" height="230" rx="16" fill="#022C22" stroke="#34D399" stroke-width="3"/>
+  <image href="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&amp;auto=format&amp;fit=crop&amp;q=80" x="50" y="132" width="176" height="226" preserveAspectRatio="xMidYMid slice" clip-path="inset(0% round 14px)"/>
+
+  <!-- Student Status Chip -->
+  <rect x="52" y="374" width="172" height="32" rx="8" fill="#10B981"/>
+  <text x="138" y="395" text-anchor="middle" fill="#FFFFFF" font-family="sans-serif" font-size="12" font-weight="800" letter-spacing="1">ACTIVE STUDENT</text>
+
+  <!-- Info Fields -->
+  <!-- Name -->
+  <text x="260" y="160" fill="#A7F3D0" font-family="sans-serif" font-size="11" font-weight="700" letter-spacing="1">FULL NAME</text>
+  <text x="260" y="190" fill="#FFFFFF" font-family="sans-serif" font-size="26" font-weight="900">PRIYA SHARMA</text>
+
+  <!-- Student ID -->
+  <text x="260" y="230" fill="#A7F3D0" font-family="sans-serif" font-size="11" font-weight="700" letter-spacing="1">STUDENT ID NUMBER</text>
+  <text x="260" y="258" fill="#FFFFFF" font-family="monospace" font-size="20" font-weight="800">SID-UCB-2024-99214</text>
+
+  <!-- Campus & Department -->
+  <text x="260" y="296" fill="#A7F3D0" font-family="sans-serif" font-size="11" font-weight="700" letter-spacing="1">CAMPUS &amp; DEGREE PROGRAM</text>
+  <text x="260" y="322" fill="#F0FDF4" font-family="sans-serif" font-size="16" font-weight="700">UC Berkeley • Bioengineering '26</text>
+
+  <!-- Two Column Metadata -->
+  <text x="260" y="360" fill="#A7F3D0" font-family="sans-serif" font-size="10" font-weight="700">VALID THROUGH</text>
+  <text x="260" y="380" fill="#FFFFFF" font-family="sans-serif" font-size="14" font-weight="700">JUNE 2028</text>
+
+  <text x="420" y="360" fill="#A7F3D0" font-family="sans-serif" font-size="10" font-weight="700">EMERGENCY PHONE</text>
+  <text x="420" y="380" fill="#FFFFFF" font-family="monospace" font-size="14" font-weight="700">+1 (510) 555-0192</text>
+
+  <text x="580" y="360" fill="#A7F3D0" font-family="sans-serif" font-size="10" font-weight="700">CAMPUS SAFETY TIER</text>
+  <text x="580" y="380" fill="#FDE047" font-family="sans-serif" font-size="14" font-weight="800">VERIFIED PEER ✓</text>
+
+  <!-- Barcode Simulation Bottom -->
+  <g transform="translate(260, 420)">
+    <rect x="0" y="0" width="3" height="42" fill="#FFFFFF"/>
+    <rect x="6" y="0" width="7" height="42" fill="#FFFFFF"/>
+    <rect x="16" y="0" width="3" height="42" fill="#FFFFFF"/>
+    <rect x="22" y="0" width="10" height="42" fill="#FFFFFF"/>
+    <rect x="36" y="0" width="4" height="42" fill="#FFFFFF"/>
+    <rect x="44" y="0" width="8" height="42" fill="#FFFFFF"/>
+    <rect x="56" y="0" width="3" height="42" fill="#FFFFFF"/>
+    <rect x="63" y="0" width="12" height="42" fill="#FFFFFF"/>
+    <rect x="80" y="0" width="5" height="42" fill="#FFFFFF"/>
+    <rect x="90" y="0" width="8" height="42" fill="#FFFFFF"/>
+    <rect x="102" y="0" width="4" height="42" fill="#FFFFFF"/>
+    <rect x="110" y="0" width="14" height="42" fill="#FFFFFF"/>
+    <rect x="128" y="0" width="3" height="42" fill="#FFFFFF"/>
+    <rect x="135" y="0" width="9" height="42" fill="#FFFFFF"/>
+    <rect x="148" y="0" width="5" height="42" fill="#FFFFFF"/>
+    <rect x="157" y="0" width="10" height="42" fill="#FFFFFF"/>
+    <rect x="171" y="0" width="4" height="42" fill="#FFFFFF"/>
+    <rect x="180" y="0" width="12" height="42" fill="#FFFFFF"/>
+    <rect x="196" y="0" width="4" height="42" fill="#FFFFFF"/>
+    <rect x="204" y="0" width="6" height="42" fill="#FFFFFF"/>
+    <rect x="214" y="0" width="14" height="42" fill="#FFFFFF"/>
+    <rect x="232" y="0" width="4" height="42" fill="#FFFFFF"/>
+    <rect x="240" y="0" width="8" height="42" fill="#FFFFFF"/>
+    <rect x="252" y="0" width="3" height="42" fill="#FFFFFF"/>
+    <rect x="260" y="0" width="10" height="42" fill="#FFFFFF"/>
+  </g>
+
+  <!-- Stamp on Bottom Right -->
+  <g transform="translate(640, 395)">
+    <circle cx="50" cy="40" r="36" fill="none" stroke="#34D399" stroke-width="2.5" stroke-dasharray="4 2"/>
+    <text x="50" y="36" text-anchor="middle" fill="#34D399" font-family="sans-serif" font-size="10" font-weight="900">CAMPUS</text>
+    <text x="50" y="49" text-anchor="middle" fill="#34D399" font-family="sans-serif" font-size="9" font-weight="800">TRUSTED</text>
+  </g>
+</svg>
