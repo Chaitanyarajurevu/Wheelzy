@@ -17,10 +17,10 @@ import { useAuth } from "@/context/AuthContext";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
-  { label: "Rent a Ride", href: "#vehicles" },
-  { label: "How It Works", href: "#how-it-works" },
-  { label: "Safety", href: "#safety" },
-  { label: "Contact", href: "#contact" },
+  { label: "Rent a Ride", href: "/#vehicles" },
+  { label: "How It Works", href: "/#how-it-works" },
+  { label: "Safety", href: "/#safety" },
+  { label: "Contact", href: "/#contact" },
 ];
 
 export function Navbar() {
@@ -57,7 +57,43 @@ export function Navbar() {
     return "/renter/dashboard";
   };
 
-  const handleMobileNavClick = () => setMobileMenuOpen(false);
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (typeof window === "undefined") return;
+
+    if (href === "/") {
+      if (window.location.pathname === "/") {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      return;
+    }
+
+    if (href.startsWith("/#") || href.startsWith("#")) {
+      const hash = href.startsWith("/#") ? href.substring(1) : href;
+      const targetId = hash.replace("#", "");
+      
+      if (window.location.pathname === "/") {
+        e.preventDefault();
+        const element = document.getElementById(targetId);
+        if (element) {
+          const navbarHeight = 85;
+          const targetPosition = element.getBoundingClientRect().top + window.pageYOffset - navbarHeight;
+          window.scrollTo({
+            top: targetPosition,
+            behavior: "smooth",
+          });
+          window.history.pushState(null, "", hash);
+        }
+      }
+    }
+  };
+
+  const handleMobileNavClick = (e?: React.MouseEvent<HTMLAnchorElement>, href?: string) => {
+    setMobileMenuOpen(false);
+    if (e && href) {
+      handleNavClick(e, href);
+    }
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
@@ -93,6 +129,7 @@ export function Navbar() {
               <Link
                 key={link.label}
                 href={link.href}
+                onClick={(e) => handleNavClick(e, link.href)}
                 className="relative px-5 py-3 text-[1rem] font-semibold text-white/70 hover:text-emerald-300 rounded-lg transition-colors duration-200 group"
               >
                 {link.label}
@@ -220,7 +257,7 @@ export function Navbar() {
               <Link
                 key={link.label}
                 href={link.href}
-                onClick={handleMobileNavClick}
+                onClick={(e) => handleMobileNavClick(e, link.href)}
                 className="px-3 py-3 text-[0.9375rem] font-semibold text-white/65 hover:text-emerald-300 hover:bg-emerald-500/[0.07] rounded-xl transition-all duration-150 border border-transparent hover:border-emerald-500/15"
               >
                 {link.label}

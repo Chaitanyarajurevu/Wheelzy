@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -16,6 +16,13 @@ import {
   ArrowRight,
   Sparkles,
   Zap,
+  Mail,
+  Phone,
+  MessageSquare,
+  Send,
+  CheckCircle2,
+  Headphones,
+  AlertCircle,
 } from "lucide-react";
 
 export function HowItWorksSection() {
@@ -358,6 +365,247 @@ export function FinalCTASection() {
   );
 }
 
+export function ContactSection() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    campus: "UC Berkeley",
+    topic: "Renter Support",
+    message: "",
+  });
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.email || !formData.message) return;
+    setIsSubmitting(true);
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setIsSubmitted(true);
+    }, 500);
+  };
+
+  return (
+    <section id="contact" className="py-20 sm:py-24 bg-gradient-to-b from-white to-gray-50/60 border-b border-gray-100 scroll-mt-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Section Header */}
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold tracking-wide uppercase mb-3 border border-emerald-100">
+            <Headphones className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Campus Assistance & Operations</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+            Contact & Campus Support
+          </h2>
+          <p className="mt-3 text-sm sm:text-base text-gray-600 leading-relaxed">
+            Have questions about booking a ride, listing your two-wheeler, or finding your designated campus hub? We&apos;re here for you 7 days a week.
+          </p>
+        </div>
+
+        {/* 3 Contact Support Channels */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          
+          {/* Card 1: Student Renters */}
+          <div className="bg-white rounded-2xl p-6 border border-gray-200/80 shadow-xs hover:border-emerald-300 hover:shadow-md transition-all group">
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+              <MessageSquare className="w-6 h-6 stroke-[1.8]" />
+            </div>
+            <h3 className="text-base font-bold text-gray-900 mb-1">Student Riders</h3>
+            <p className="text-xs text-gray-500 mb-4 leading-relaxed">
+              Help with instant bookings, verification, lock codes, and mandatory return schedule check-in.
+            </p>
+            <div className="space-y-2 pt-3 border-t border-gray-100 text-xs font-semibold text-gray-700">
+              <a href="mailto:support@wheelzy.campus" className="flex items-center gap-2 text-emerald-700 hover:underline">
+                <Mail className="w-3.5 h-3.5 text-emerald-600" />
+                <span>support@wheelzy.campus</span>
+              </a>
+              <a href="tel:+15108437433" className="flex items-center gap-2 text-gray-700 hover:text-emerald-700">
+                <Phone className="w-3.5 h-3.5 text-gray-500" />
+                <span>+1 (510) 843-RIDE (Ext 1)</span>
+              </a>
+              <div className="flex items-center gap-2 text-[11px] text-gray-400">
+                <Clock className="w-3.5 h-3.5" />
+                <span>Daily 7:00 AM – 11:00 PM</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: Vehicle Hosts */}
+          <div className="bg-white rounded-2xl p-6 border border-gray-200/80 shadow-xs hover:border-emerald-300 hover:shadow-md transition-all group">
+            <div className="w-12 h-12 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+              <Zap className="w-6 h-6 stroke-[1.8]" />
+            </div>
+            <h3 className="text-base font-bold text-gray-900 mb-1">Vehicle Hosts</h3>
+            <p className="text-xs text-gray-500 mb-4 leading-relaxed">
+              Assistance with adding bikes/scooters, setting return deadlines, daily earnings, and photo verification.
+            </p>
+            <div className="space-y-2 pt-3 border-t border-gray-100 text-xs font-semibold text-gray-700">
+              <a href="mailto:hosts@wheelzy.campus" className="flex items-center gap-2 text-teal-700 hover:underline">
+                <Mail className="w-3.5 h-3.5 text-teal-600" />
+                <span>hosts@wheelzy.campus</span>
+              </a>
+              <a href="tel:+15108437433" className="flex items-center gap-2 text-gray-700 hover:text-teal-700">
+                <Phone className="w-3.5 h-3.5 text-gray-500" />
+                <span>+1 (510) 843-RIDE (Ext 2)</span>
+              </a>
+              <div className="flex items-center gap-2 text-[11px] text-gray-400">
+                <MapPin className="w-3.5 h-3.5" />
+                <span>Campus Quad Hubs: Mon – Fri</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 3: 24/7 Safety & Campus Security */}
+          <div className="bg-white rounded-2xl p-6 border border-emerald-200/90 shadow-xs hover:border-emerald-400 hover:shadow-md transition-all group bg-gradient-to-br from-white to-emerald-50/20">
+            <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+              <ShieldCheck className="w-6 h-6 stroke-[1.8]" />
+            </div>
+            <h3 className="text-base font-bold text-gray-900 mb-1">Campus Safety & Overdue</h3>
+            <p className="text-xs text-gray-500 mb-4 leading-relaxed">
+              Direct dispatch for overdue vehicle recoveries, damaged rides, or security coordinator escalations.
+            </p>
+            <div className="space-y-2 pt-3 border-t border-gray-100 text-xs font-semibold text-gray-700">
+              <a href="mailto:safety@wheelzy.campus" className="flex items-center gap-2 text-emerald-700 hover:underline">
+                <Mail className="w-3.5 h-3.5 text-emerald-600" />
+                <span>safety@wheelzy.campus</span>
+              </a>
+              <a href="tel:+15108437233" className="flex items-center gap-2 text-red-600 hover:text-red-700 font-bold">
+                <Phone className="w-3.5 h-3.5 text-red-500" />
+                <span>+1 (510) 843-SAFE (24/7 Hotline)</span>
+              </a>
+              <div className="flex items-center gap-2 text-[11px] text-emerald-700">
+                <Clock className="w-3.5 h-3.5" />
+                <span>24 Hours / 7 Days On-Campus</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Interactive In-Platform Contact Form */}
+        <div className="bg-white rounded-3xl p-6 sm:p-10 border border-gray-200 shadow-sm max-w-3xl mx-auto">
+          <div className="flex items-center gap-3 mb-6 pb-6 border-b border-gray-100">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+              <Send className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">Send an Inquiry or Feedback</h3>
+              <p className="text-xs text-gray-500">Our campus team responds within 1 hour during operational hours.</p>
+            </div>
+          </div>
+
+          {isSubmitted ? (
+            <div className="rounded-2xl bg-emerald-50 p-6 border border-emerald-200 text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center mx-auto">
+                <CheckCircle2 className="w-6 h-6" />
+              </div>
+              <h4 className="text-base font-bold text-emerald-950">Message Received!</h4>
+              <p className="text-xs sm:text-sm text-emerald-800 max-w-md mx-auto">
+                Thank you for reaching out, {formData.name}. A Wheelzy campus coordinator will follow up at <span className="font-semibold">{formData.email}</span> shortly.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSubmitted(false);
+                  setFormData({ name: "", email: "", campus: "UC Berkeley", topic: "Renter Support", message: "" });
+                }}
+                className="mt-2 text-xs font-bold text-emerald-700 hover:text-emerald-800 underline"
+              >
+                Send another message
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Your Full Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="Marcus Chen"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Student / Campus Email (.edu)</label>
+                  <input
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="student@berkeley.edu"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Campus Hub</label>
+                  <select
+                    value={formData.campus}
+                    onChange={(e) => setFormData({ ...formData, campus: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 bg-white"
+                  >
+                    <option value="UC Berkeley">UC Berkeley (Sproul / Moffitt)</option>
+                    <option value="Stanford University">Stanford University (White Plaza)</option>
+                    <option value="UCLA">UCLA (Westwood / Bruin Walk)</option>
+                    <option value="MIT">MIT / Harvard Yard</option>
+                    <option value="UT Austin">UT Austin (Speedway Hub)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Topic</label>
+                  <select
+                    value={formData.topic}
+                    onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 bg-white"
+                  >
+                    <option value="Renter Support">Renter & Booking Support</option>
+                    <option value="Host Inquiry">Listing & Host Question</option>
+                    <option value="Return Deadline">Return Deadline / Scheduling</option>
+                    <option value="Safety Report">Report Safety or Incident</option>
+                    <option value="General Feedback">General Feedback</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">How can we help?</label>
+                <textarea
+                  rows={4}
+                  required
+                  value={formData.message}
+                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  placeholder="Describe your question, request, or issue with vehicle location or lock..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm transition-all shadow-sm hover:shadow-md flex items-center gap-2 disabled:opacity-50"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>{isSubmitting ? "Sending..." : "Submit Message"}</span>
+                </button>
+              </div>
+            </form>
+          )}
+
+        </div>
+
+      </div>
+    </section>
+  );
+}
+
 export function FooterSection() {
   return (
     <footer className="bg-[#0B1320] text-gray-400 py-16 border-t border-gray-800">
@@ -384,7 +632,8 @@ export function FooterSection() {
             <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-4">Platform</h4>
             <ul className="space-y-2.5 text-xs sm:text-sm">
               <li><a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a></li>
-              <li><a href="#explore-rides" className="hover:text-white transition-colors">Rent a Ride</a></li>
+              <li><a href="#vehicles" className="hover:text-white transition-colors">Rent a Ride</a></li>
+              <li><a href="#contact" className="hover:text-white transition-colors">Contact & Support</a></li>
               <li><Link href="/owner" className="hover:text-white transition-colors">List Your Vehicle</Link></li>
               <li><Link href="/renter" className="hover:text-white transition-colors">Student Dashboard</Link></li>
             </ul>

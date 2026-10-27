@@ -10,6 +10,7 @@ import {
   ListYourVehicleSection,
   SafetyAndTrustSection,
   FinalCTASection,
+  ContactSection,
   FooterSection,
 } from "@/components/home/Sections";
 import { RoleHomeBanner } from "@/components/home/RoleHomeBanner";
@@ -94,7 +95,8 @@ export default function HomePage() {
       </div>
 
       {/* 3. Explore Campus Rides Section */}
-      <section id="explore-rides" className="pt-8 pb-20 bg-white">
+      <section id="vehicles" className="pt-8 pb-20 bg-white scroll-mt-24">
+        <div id="explore-rides" className="scroll-mt-24" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           {/* Section Header */}
@@ -205,6 +207,9 @@ export default function HomePage() {
 
       {/* 8. Final Call to Action */}
       <FinalCTASection />
+
+      {/* 8.5 Contact & Campus Support */}
+      <ContactSection />
 
       {/* 9. Production Footer */}
       <FooterSection />

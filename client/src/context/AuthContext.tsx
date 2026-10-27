@@ -48,33 +48,35 @@ const DEFAULT_USERS_BY_ROLE: Record<Role, string> = {
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    // Uniform initial state for SSR and initial client hydration
-    return dataStore.getUserById(DEFAULT_USERS_BY_ROLE.renter) || null;
-  });
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   const refreshUser = () => {
     try {
+      const isExplicit = localStorage.getItem("wheelzy_auth_explicit") === "true";
       const storedId = localStorage.getItem("wheelzy_user_id");
-      if (storedId) {
+      if (isExplicit && storedId) {
         const found = dataStore.getUserById(storedId);
         if (found) {
           setUser(found);
           document.cookie = `wheelzy_role=${found.role}; path=/; max-age=86400`;
+          return;
         }
       }
+      setUser(null);
     } catch {
       // ignore
     }
   };
 
   useEffect(() => {
-    // Check localStorage for persisted session
+    // Check localStorage for an explicit user session
     try {
+      const isExplicit = localStorage.getItem("wheelzy_auth_explicit") === "true";
       const storedId = localStorage.getItem("wheelzy_user_id");
-      if (storedId) {
+
+      if (isExplicit && storedId) {
         const found = dataStore.getUserById(storedId);
         if (found) {
           setUser(found);
@@ -83,13 +85,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
       }
-      // On fresh website open without saved session, default to login as renter
-      const defaultRenter = dataStore.getUserById(DEFAULT_USERS_BY_ROLE.renter);
-      if (defaultRenter) {
-        setUser(defaultRenter);
-        localStorage.setItem("wheelzy_user_id", defaultRenter.id);
-        document.cookie = `wheelzy_role=${defaultRenter.role}; path=/; max-age=86400`;
-      }
+
+      // Guest / unauthenticated visitor by default
+      localStorage.removeItem("wheelzy_user_id");
+      localStorage.removeItem("wheelzy_auth_explicit");
+      document.cookie = "wheelzy_role=; path=/; max-age=0";
+      setUser(null);
     } catch {
       // ignore
     } finally {
@@ -102,6 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const u = dataStore.getUserById(userId);
     if (u) {
       setUser(u);
+      localStorage.setItem("wheelzy_auth_explicit", "true");
       localStorage.setItem("wheelzy_user_id", u.id);
       document.cookie = `wheelzy_role=${u.role}; path=/; max-age=86400`;
     }
@@ -172,6 +174,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       );
 
       setUser(matched);
+      localStorage.setItem("wheelzy_auth_explicit", "true");
       localStorage.setItem("wheelzy_user_id", matched.id);
       document.cookie = `wheelzy_role=${matched.role}; path=/; max-age=86400`;
 
@@ -220,6 +223,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       setUser(created);
+      localStorage.setItem("wheelzy_auth_explicit", "true");
       localStorage.setItem("wheelzy_user_id", created.id);
       document.cookie = `wheelzy_role=${created.role}; path=/; max-age=86400`;
 
@@ -245,6 +249,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("wheelzy_user_id");
+    localStorage.removeItem("wheelzy_auth_explicit");
     document.cookie = "wheelzy_role=; path=/; max-age=0";
     router.push("/login");
   };
