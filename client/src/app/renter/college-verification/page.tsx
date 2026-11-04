@@ -7,9 +7,6 @@ import {
   Upload,
   ShieldCheck,
   CheckCircle2,
-  Eye,
-  AlertCircle,
-  Sparkles,
   ArrowLeft,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -69,10 +66,10 @@ export default function RenterCollegeVerificationPage() {
     <div className="space-y-6 max-w-4xl mx-auto pb-16 font-sans">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-gray-900 tracking-tight">
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight">
             College Student ID Verification
           </h1>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-gray-500 mt-0.5">
             Upload your official university student ID card proof to unlock instant peer rentals across campus hubs.
           </p>
         </div>
@@ -87,13 +84,13 @@ export default function RenterCollegeVerificationPage() {
       </div>
 
       {/* Verification Status Overview Banner */}
-      <div className="bg-gradient-to-r from-[#04241B] via-[#063B2C] to-[#04241B] rounded-3xl p-6 text-white shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-emerald-500/30">
+      <div className="bg-gradient-to-r from-[#04241B] via-[#063B2C] to-[#04241B] rounded-2xl p-5 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-emerald-500/30">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center shrink-0">
-            <GraduationCap size={26} />
+          <div className="w-11 h-11 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center shrink-0">
+            <GraduationCap size={24} />
           </div>
           <div>
-            <h2 className="text-base font-bold text-white">Campus Student KYC Status</h2>
+            <h2 className="text-sm font-bold text-white">Campus Student KYC Status</h2>
             <p className="text-xs text-emerald-100/70">
               Campus: {user?.campus || "UC Berkeley"} • Account: {user?.email}
             </p>
@@ -110,11 +107,11 @@ export default function RenterCollegeVerificationPage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Section: College Student ID Proof */}
-        <div className="bg-white rounded-3xl border border-gray-100 p-6 sm:p-8 shadow-sm space-y-5">
+        <div className="bg-white rounded-2xl border border-gray-200/90 p-6 shadow-2xs space-y-5">
           <div className="flex items-center justify-between pb-3 border-b border-gray-100">
             <div className="flex items-center gap-2">
               <GraduationCap className="w-5 h-5 text-emerald-700" />
-              <h3 className="text-base font-bold text-gray-900">
+              <h3 className="text-sm font-bold text-gray-900">
                 Official University Student ID Proof Card
               </h3>
             </div>
@@ -132,7 +129,7 @@ export default function RenterCollegeVerificationPage() {
                 type="text"
                 value={studentIdNumber}
                 onChange={(e) => setStudentIdNumber(e.target.value)}
-                className="w-full p-3 text-xs bg-gray-50 border border-gray-200 rounded-xl font-mono focus:outline-emerald-600 font-semibold"
+                className="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl font-mono focus:ring-2 focus:ring-emerald-600 outline-none font-semibold"
                 required
               />
             </div>
@@ -145,7 +142,7 @@ export default function RenterCollegeVerificationPage() {
                 type="text"
                 value={collegeYear}
                 onChange={(e) => setCollegeYear(e.target.value)}
-                className="w-full p-3 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-emerald-600 font-semibold"
+                className="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-600 outline-none font-semibold"
                 required
               />
             </div>
@@ -160,14 +157,14 @@ export default function RenterCollegeVerificationPage() {
               <img
                 src={studentIdPreview}
                 alt="Student ID Preview"
-                className="w-full h-auto max-h-[300px] object-contain mx-auto rounded-xl"
+                className="w-full h-auto max-h-[260px] object-contain mx-auto rounded-xl"
               />
             </div>
           </div>
 
           {/* File Upload Zone */}
           <label className="border-2 border-dashed border-emerald-200 rounded-2xl p-6 text-center bg-emerald-50/20 hover:bg-emerald-50/40 transition-colors flex flex-col items-center justify-center cursor-pointer block">
-            <Upload className="w-7 h-7 text-emerald-600 mb-2" />
+            <Upload className="w-6 h-6 text-emerald-600 mb-1.5" />
             <p className="text-xs font-bold text-gray-800">
               Click to replace Student ID card photo
             </p>
@@ -195,7 +192,7 @@ export default function RenterCollegeVerificationPage() {
         </div>
 
         {/* Global Submit Button */}
-        <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="bg-white rounded-2xl border border-gray-200/90 p-5 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-xs text-gray-500">
             <span className="font-bold text-gray-900 block">Campus Honor Code:</span>
             By saving, you verify you are an actively enrolled student in good standing.
@@ -204,13 +201,13 @@ export default function RenterCollegeVerificationPage() {
           <button
             type="submit"
             disabled={isUploading}
-            className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-bold text-xs shadow-lg cursor-pointer transition-all flex items-center justify-center gap-2 shrink-0 active:scale-95"
+            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-md shadow-emerald-900/20 cursor-pointer transition-all flex items-center justify-center gap-2 shrink-0 active:scale-95"
           >
             {isUploading ? (
               <span>Saving Verification...</span>
             ) : (
               <>
-                <CheckCircle2 size={16} />
+                <CheckCircle2 size={15} />
                 <span>Save Student ID Verification</span>
               </>
             )}

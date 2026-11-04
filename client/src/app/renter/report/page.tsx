@@ -39,7 +39,7 @@ export default function RenterReportPage() {
   return (
     <div className="space-y-6 max-w-3xl mx-auto pb-12 font-sans">
       <div>
-        <h1 className="text-2xl font-black text-gray-900 tracking-tight">Report an Issue</h1>
+        <h1 className="text-xl font-bold text-gray-900 tracking-tight">Report an Issue</h1>
         <p className="text-xs text-gray-500 mt-1">
           Submit safety concerns, mechanical faults, or billing disputes directly to campus operations.
         </p>

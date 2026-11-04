@@ -192,76 +192,49 @@ export function ListYourVehicleSection() {
           <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-300/10 rounded-full blur-2xl pointer-events-none" />
 
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+          <div className="relative z-10 max-w-3xl space-y-6">
+            <div className="inline-flex items-center gap-2 bg-emerald-400/20 border border-emerald-400/30 px-3.5 py-1.5 rounded-full text-xs font-semibold text-emerald-300">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-300" />
+              Turn Idle Wheels into College Income
+            </div>
 
-            {/* Left Copy */}
-            <div className="lg:col-span-7 space-y-6">
-              <div className="inline-flex items-center gap-2 bg-emerald-400/20 border border-emerald-400/30 px-3.5 py-1.5 rounded-full text-xs font-semibold text-emerald-300">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-300" />
-                Turn Idle Wheels into College Income
+            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+              Got a bike or scooter sitting idle during lectures?
+            </h2>
+
+            <p className="text-sm sm:text-base text-emerald-100/90 max-w-xl leading-relaxed">
+              List your vehicle on Wheelzy and earn up to $300+/month renting safely to verified classmates on your campus. You set your availability, prices, and pickup rules.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+                <p className="text-2xl font-black text-white">$15–$30</p>
+                <p className="text-xs text-emerald-200 mt-1">Average daily earnings</p>
               </div>
-
-              <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
-                Got a bike or scooter sitting idle during lectures?
-              </h2>
-
-              <p className="text-sm sm:text-base text-emerald-100/90 max-w-xl leading-relaxed">
-                List your vehicle on Wheelzy and earn up to $300+/month renting safely to verified classmates on your campus. You set your availability, prices, and pickup rules.
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-                  <p className="text-2xl font-black text-white">$15–$30</p>
-                  <p className="text-xs text-emerald-200 mt-1">Average daily earnings</p>
-                </div>
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-                  <p className="text-2xl font-black text-white">100%</p>
-                  <p className="text-xs text-emerald-200 mt-1">Verified student riders</p>
-                </div>
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-                  <p className="text-2xl font-black text-white">Zero</p>
-                  <p className="text-xs text-emerald-200 mt-1">Upfront listing fees</p>
-                </div>
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+                <p className="text-2xl font-black text-white">100%</p>
+                <p className="text-xs text-emerald-200 mt-1">Verified student riders</p>
               </div>
-
-              <div className="flex flex-wrap items-center gap-4 pt-4">
-                <Link
-                  href="/owner"
-                  className="px-6 py-3.5 bg-emerald-400 hover:bg-emerald-300 text-emerald-950 font-bold rounded-2xl text-sm transition-all shadow-lg shadow-emerald-950/20 active:scale-95 inline-flex items-center gap-2"
-                >
-                  List Your Vehicle <ArrowRight className="w-4 h-4" />
-                </Link>
-                <Link
-                  href="/owner"
-                  className="px-5 py-3.5 text-white/90 hover:text-white border border-white/20 hover:bg-white/10 rounded-2xl text-sm font-semibold transition-colors"
-                >
-                  Learn More
-                </Link>
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+                <p className="text-2xl font-black text-white">Zero</p>
+                <p className="text-xs text-emerald-200 mt-1">Upfront listing fees</p>
               </div>
             </div>
 
-            {/* Right Image Container */}
-            <div className="lg:col-span-5 relative">
-              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10">
-                <Image
-                  src="/owner_earning.jpg"
-                  alt="College student proudly standing next to parked scooter on campus"
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 40vw"
-                  className="object-cover"
-                />
-              </div>
-              <div className="absolute -bottom-4 -left-4 bg-white text-gray-900 rounded-2xl p-4 shadow-xl border border-gray-100 hidden sm:flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
-                  ✓
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-gray-900">Student Host Certified</p>
-                  <p className="text-[11px] text-gray-500">Earned $340 last month</p>
-                </div>
-              </div>
+            <div className="flex flex-wrap items-center gap-4 pt-4">
+              <Link
+                href="/owner"
+                className="px-6 py-3.5 bg-emerald-400 hover:bg-emerald-300 text-emerald-950 font-bold rounded-2xl text-sm transition-all shadow-lg shadow-emerald-950/20 active:scale-95 inline-flex items-center gap-2"
+              >
+                List Your Vehicle <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/owner"
+                className="px-5 py-3.5 text-white/90 hover:text-white border border-white/20 hover:bg-white/10 rounded-2xl text-sm font-semibold transition-colors"
+              >
+                Learn More
+              </Link>
             </div>
-
           </div>
         </div>
       </div>

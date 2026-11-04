@@ -170,7 +170,7 @@ export function RoleHomeBanner() {
           {isOwner && (
             <>
               <Link
-                href="/owner/add-vehicle"
+                href="/owner/my-vehicles?tab=add"
                 className="px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-500/30 font-medium transition-colors flex items-center gap-1.5"
               >
                 <PlusCircle className="w-3.5 h-3.5" />
@@ -184,7 +184,7 @@ export function RoleHomeBanner() {
                 <span>Booking Requests</span>
               </Link>
               <Link
-                href="/owner/return-tracking"
+                href="/owner/my-vehicles?tab=returns"
                 className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-white/90 font-medium transition-colors flex items-center gap-1.5"
               >
                 <Camera className="w-3.5 h-3.5 text-emerald-400" />

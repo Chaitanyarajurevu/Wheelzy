@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { type Role } from "@/lib/roles";
 import { dataStore, User } from "@/lib/dataStore";
+import { getPendingSearch, clearPendingSearch, buildBrowseSearchUrl } from "@/lib/searchState";
 
 interface AuthContextType {
   user: User | null;
@@ -178,8 +179,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("wheelzy_user_id", matched.id);
       document.cookie = `wheelzy_role=${matched.role}; path=/; max-age=86400`;
 
-      // Redirect to home page as requested: "after login it has to show to the home page as the role they login"
-      router.push("/");
+      // Role-based direct redirection; renter checks for pending search first
+      if (matched.role === "system_admin") {
+        router.push("/admin/dashboard");
+      } else if (matched.role === "owner") {
+        router.push("/owner/dashboard");
+      } else {
+        const pending = getPendingSearch();
+        if (pending) {
+          clearPendingSearch();
+          router.push(buildBrowseSearchUrl(pending));
+        } else {
+          router.push("/renter/dashboard");
+        }
+      }
 
       setIsLoading(false);
       return { success: true, user: matched };
@@ -227,8 +240,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("wheelzy_user_id", created.id);
       document.cookie = `wheelzy_role=${created.role}; path=/; max-age=86400`;
 
-      // Redirect to home page
-      router.push("/");
+      // Role-based direct redirection; renter checks for pending search first
+      if (created.role === "owner") {
+        router.push("/owner/dashboard");
+      } else {
+        const pending = getPendingSearch();
+        if (pending) {
+          clearPendingSearch();
+          router.push(buildBrowseSearchUrl(pending));
+        } else {
+          router.push("/renter/dashboard");
+        }
+      }
 
       setIsLoading(false);
       return { success: true, user: created };
@@ -251,7 +274,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("wheelzy_user_id");
     localStorage.removeItem("wheelzy_auth_explicit");
     document.cookie = "wheelzy_role=; path=/; max-age=0";
-    router.push("/login");
+    router.push("/");
   };
 
   const switchRole = (newRole: Role) => {

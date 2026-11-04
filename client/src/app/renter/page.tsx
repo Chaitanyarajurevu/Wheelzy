@@ -6,29 +6,28 @@ import {
   Car,
   Compass,
   Search,
-  BookOpen,
   Activity,
-  CreditCard,
   RotateCcw,
   AlertTriangle,
-  Calendar,
-  History,
-  ShieldCheck,
-  CheckCircle2,
   Clock,
-  MapPin,
-  Camera,
   Star,
-  Sparkles,
   ArrowRight,
   Upload,
-  Check,
-  Zap,
   ChevronRight,
-  Phone,
+  Inbox,
+  MapPin,
+  Sparkles,
 } from "lucide-react";
 import { StatCard } from "@/components/DashboardWidgets";
-import { dataStore, StoredVehicle, StoredBooking } from "@/lib/dataStore";
+import {
+  dataStore,
+  StoredVehicle,
+  StoredBooking,
+  IncidentReport,
+  STANDARD_HOURLY_RATE,
+  calculateRentalAmount,
+  getVehicleDurationHours,
+} from "@/lib/dataStore";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import {
@@ -53,26 +52,17 @@ export default function RenterDashboardPage() {
     dataStore.getApprovedAvailableVehicles(user?.campus)
   );
 
-  // Calling & KYC Inspection Dialogs
   const [callModalBooking, setCallModalBooking] = useState<StoredBooking | null>(null);
   const [inspectParticipant, setInspectParticipant] = useState<StudentIdParticipant | null>(null);
-
-  // Search & Filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<"All" | "Bike" | "Scooter">("All");
-
-  // Return Photo Upload Modal
   const [returnModalBooking, setReturnModalBooking] = useState<StoredBooking | null>(null);
   const [returnNotes, setReturnNotes] = useState("");
-  const [returnPhotoPreview, setReturnPhotoPreview] = useState("/card_return.jpg");
+  const [returnPhotoPreview] = useState("/card_return.jpg");
   const [isSubmittingReturn, setIsSubmittingReturn] = useState(false);
-
-  // Vehicle Details Modal
   const [selectedVehicle, setSelectedVehicle] = useState<StoredVehicle | null>(null);
-
-  // Report Issue Modal
   const [isReportOpen, setIsReportOpen] = useState(false);
-  const [reportCategory, setReportCategory] = useState<any>("Vehicle Damage");
+  const [reportCategory, setReportCategory] = useState<IncidentReport["category"]>("Vehicle Damage");
   const [reportDescription, setReportDescription] = useState("");
 
   const reloadData = () => {
@@ -90,11 +80,9 @@ export default function RenterDashboardPage() {
   const activeRentals = myBookings.filter((b) => b.status === "active");
   const upcomingBookings = myBookings.filter((b) => b.status === "approved" || b.status === "pending");
 
-  // Handle Return Photo Upload
   const handleSubmitReturnPhoto = (e: React.FormEvent) => {
     e.preventDefault();
     if (!returnModalBooking) return;
-
     setIsSubmittingReturn(true);
     setTimeout(() => {
       dataStore.submitReturnPhoto(
@@ -110,26 +98,27 @@ export default function RenterDashboardPage() {
     }, 600);
   };
 
-  // Handle Instant Booking
   const handleInstantBook = (vehicle: StoredVehicle) => {
     if (!user) {
       toast.error("Please login to book a ride");
       return;
     }
+    const duration = getVehicleDurationHours(vehicle);
+    const totalAmount = calculateRentalAmount(duration);
     dataStore.createBooking({
       vehicle,
       renter: user,
-      pickupTime: "Today, 3:00 PM",
-      dropoffTime: "Today, 6:00 PM",
-      durationHours: 3,
+      pickupTime: vehicle.availableFrom || "Today, 9:00 AM",
+      dropoffTime: vehicle.mustReturnBy || "Today, 12:00 PM",
+      durationHours: duration,
       campusHub: vehicle.locationHub,
+      mandatoryReturnDeadline: vehicle.mustReturnBy,
     });
-    toast.success(`Booking request sent to ${vehicle.ownerName}!`);
+    toast.success(`Booking request sent to ${vehicle.ownerName}! Duration: ${duration}h • Total: ₹${totalAmount}.`);
     setSelectedVehicle(null);
     reloadData();
   };
 
-  // Handle Issue Report
   const handleSendReport = (e: React.FormEvent) => {
     e.preventDefault();
     if (!reportDescription) {
@@ -150,7 +139,6 @@ export default function RenterDashboardPage() {
     setReportDescription("");
   };
 
-  // Filtered available vehicles
   const filteredVehicles = availableVehicles.filter((v) => {
     if (selectedCategory !== "All" && v.category !== selectedCategory) return false;
     if (
@@ -163,72 +151,60 @@ export default function RenterDashboardPage() {
     }
     return true;
   });
-
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-16 font-sans">
+    <div className="max-w-7xl mx-auto pb-12 space-y-6 font-sans">
 
-      {/* 1. Student Renter Hero Banner */}
-      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-[#022C22] via-[#064E3B] to-[#047857] text-white p-7 sm:p-9 shadow-xl border border-emerald-500/30">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-400/20 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-          <div className="space-y-2.5 max-w-2xl">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-bold text-emerald-300 border border-white/15">
-              <Zap className="w-4 h-4 text-emerald-400" />
-              <span>STUDENT RENTER DASHBOARD</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
-              Welcome Back, {user?.name?.split(" ")[0] || "Student"}!
-            </h1>
-            <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed">
-              Rent bikes and scooters near your campus quads, track your live digital unlock codes, and upload return inspection photos.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/renter/browse"
-              className="px-5 py-2.5 rounded-xl bg-white text-emerald-950 font-bold text-xs hover:bg-emerald-50 shadow-md transition-all flex items-center gap-2"
-            >
-              <Compass className="w-4 h-4 text-emerald-700" />
-              <span>Browse All Campus Rides</span>
-            </Link>
-            <button
-              onClick={() => setIsReportOpen(true)}
-              className="px-4 py-2.5 rounded-xl bg-white/15 backdrop-blur-md text-white font-bold text-xs hover:bg-white/20 border border-white/20 transition-all flex items-center gap-2 cursor-pointer"
-            >
-              <AlertTriangle className="w-4 h-4 text-emerald-300" />
-              <span>Report Issue</span>
-            </button>
-          </div>
+      {/* Page Heading */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Your bookings, active rides and recent activity.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/renter/browse"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-800 transition-colors"
+          >
+            <Compass size={13} />
+            <span>Find a Ride</span>
+          </Link>
+          <button
+            onClick={() => setIsReportOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 text-gray-600 text-xs font-semibold hover:bg-gray-50 transition-colors cursor-pointer"
+          >
+            <AlertTriangle size={13} />
+            <span className="hidden sm:inline">Report Issue</span>
+          </button>
         </div>
       </div>
 
-      {/* 2. Four Mandatory Overview Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      {/* Summary Stats Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <StatCard
           label="Upcoming Bookings"
           value={stats.upcomingBookings}
           icon={Clock}
-          trend="Confirmed reservations"
+          trend="Confirmed"
           color="#059669"
           bg="#ECFDF5"
           highlight={stats.upcomingBookings > 0}
         />
         <StatCard
-          label="Active Rentals"
+          label="Active Rides"
           value={stats.activeRentals}
           icon={Activity}
-          trend="Live ride in progress"
-          color="#6EE7B7"
-          bg="#ECFDF5"
+          trend="Live session"
+          color="#10B981"
+          bg="#D1FAE5"
           highlight={stats.activeRentals > 0}
         />
         <StatCard
           label="Pending Requests"
           value={stats.pendingRequests}
-          icon={BookOpen}
-          trend="Awaiting host approval"
+          icon={Inbox}
+          trend="Awaiting approval"
           color="#D97706"
           bg="#FFFBEB"
         />
@@ -237,34 +213,32 @@ export default function RenterDashboardPage() {
           value={stats.returnedRentals}
           icon={RotateCcw}
           trend="Photos submitted"
-          color="#10B981"
+          color="#059669"
           bg="#ECFDF5"
         />
       </div>
 
-      {/* 3. Prominent Active Ride Highlight Card */}
+      {/* Active Ride Section — most prominent */}
       {activeRentals.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
-              <h2 className="text-base sm:text-lg font-black tracking-tight text-gray-900 flex items-center gap-2">
-                <span>My Active Ride</span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                  Live Session
-                </span>
-              </h2>
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <h2 className="text-sm font-bold text-gray-900">My Active Ride</h2>
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                Live Session
+              </span>
             </div>
             <Link
               href="/renter/active-rides"
-              className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 hover:underline"
+              className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 hover:underline"
             >
-              <span>Full Ride Controls</span>
-              <ChevronRight size={14} />
+              Full Controls
+              <ChevronRight size={13} />
             </Link>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {activeRentals.map((rental) => (
               <ActiveRideCard
                 key={rental.id}
@@ -278,35 +252,66 @@ export default function RenterDashboardPage() {
         </div>
       )}
 
-      {/* 4. Upcoming Bookings & Status Cards */}
+      {/* Booking Requests — immediately below active ride */}
       {upcomingBookings.length > 0 && (
-        <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-            <h2 className="text-base font-bold text-gray-900">Upcoming Campus Reservations</h2>
-            <Link href="/renter/booking" className="text-xs font-bold text-emerald-700 hover:underline">
-              View All
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Inbox size={15} className="text-amber-500" />
+              <h2 className="text-sm font-bold text-gray-900">Booking Requests</h2>
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                {upcomingBookings.length} Pending
+              </span>
+            </div>
+            <Link
+              href="/renter/booking-requests"
+              className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 hover:underline"
+            >
+              All Requests
+              <ChevronRight size={13} />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
             {upcomingBookings.map((b) => (
-              <div key={b.id} className="p-4 rounded-2xl bg-gray-50/70 border border-gray-100 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <img src={b.vehicleImage} alt="" className="w-10 h-9 rounded-xl object-cover" />
-                    <div>
-                      <h4 className="text-xs font-bold text-gray-900">{b.vehicleName}</h4>
-                      <p className="text-[11px] text-gray-500">{b.campusHub}</p>
-                    </div>
+              <div
+                key={b.id}
+                className="bg-white rounded-xl border border-gray-100 p-4 flex items-center justify-between gap-4 hover:border-emerald-200 transition-all"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <img
+                    src={b.vehicleImage}
+                    alt=""
+                    className="w-11 h-10 rounded-lg object-cover shrink-0"
+                  />
+                  <div className="min-w-0">
+                    <h4 className="text-xs font-bold text-gray-900 truncate">{b.vehicleName}</h4>
+                    <p className="text-[11px] text-gray-500 truncate">{b.campusHub}</p>
+                    <p className="text-[11px] text-gray-600 mt-0.5">
+                      Pickup: <span className="font-medium text-gray-800">{b.pickupTime}</span>
+                    </p>
                   </div>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${b.status === "approved" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
-                    }`}>
-                    {b.status.toUpperCase()}
-                  </span>
                 </div>
-                <div className="flex items-center justify-between text-xs text-gray-600 pt-1 border-t border-gray-200/50">
-                  <span>Slot: {b.pickupTime}</span>
-                  <span className="font-bold text-gray-900">${b.totalCost.toFixed(2)}</span>
+
+                <div className="flex items-center gap-3 shrink-0">
+                  {b.mandatoryReturnDeadline && (
+                    <div className="hidden sm:flex items-center gap-1 text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1">
+                      <AlertTriangle size={10} />
+                      <span>Return: {b.mandatoryReturnDeadline}</span>
+                    </div>
+                  )}
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-gray-900">₹{b.totalCost}</p>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        b.status === "approved"
+                          ? "bg-emerald-100 text-emerald-800"
+                          : "bg-amber-100 text-amber-800"
+                      }`}
+                    >
+                      {b.status.toUpperCase()}
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}
@@ -314,114 +319,148 @@ export default function RenterDashboardPage() {
         </div>
       )}
 
-      {/* 5. Vehicle Search & Filter Section */}
-      <div className="space-y-4">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      {/* Available Vehicles */}
+      <div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold mb-1">
-              <Sparkles size={12} className="text-emerald-500" />
-              <span>Approved Campus Rides</span>
+            <div className="flex items-center gap-1.5 mb-1">
+              <Sparkles size={13} className="text-emerald-600" />
+              <span className="text-[11px] font-semibold text-emerald-700">Approved Campus Rides</span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
-              Rent a Ride Near Your Quad
+            <h2 className="text-sm font-bold text-gray-900">
+              Available Near {user?.campus || "Your Campus"}
             </h2>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Only verified student vehicles ready for instant booking at {user?.campus || "UC Berkeley"}.
-            </p>
           </div>
 
-          {/* Category Filter Pills */}
-          <div className="flex items-center gap-1.5 p-1 bg-gray-100 rounded-2xl w-fit">
-            {(["All", "Scooter", "Bike"] as const).map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${selectedCategory === cat
-                    ? "bg-emerald-700 text-white shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Category pills */}
+            <div className="flex items-center gap-1 p-0.5 bg-gray-100 rounded-lg">
+              {(["All", "Scooter", "Bike"] as const).map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                    selectedCategory === cat
+                      ? "bg-emerald-700 text-white shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
                   }`}
-              >
-                {cat === "All" ? "All Rides" : cat === "Scooter" ? "Scooters" : "Bikes"}
-              </button>
-            ))}
+                >
+                  {cat === "All" ? "All" : cat === "Scooter" ? "Scooters" : "Bikes"}
+                </button>
+              ))}
+            </div>
+
+            {/* Search */}
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search rides..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8 pr-3 py-1.5 text-xs bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 w-44"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Search Input */}
-        <div className="relative">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search by ride model (Xiaomi, Trek, Honda Activa), hub, or specification..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 text-xs sm:text-sm bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-600 shadow-2xs"
-          />
-        </div>
+        {/* Vehicle Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredVehicles.map((v) => {
+            const duration = getVehicleDurationHours(v);
+            const totalCost = calculateRentalAmount(duration);
 
-        {/* Vehicle Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredVehicles.map((v) => (
-            <div
-              key={v.id}
-              className="bg-white rounded-3xl border border-gray-100 hover:border-emerald-200 shadow-sm hover:shadow-lg hover:shadow-emerald-900/5 transition-all overflow-hidden flex flex-col justify-between group"
-            >
-              <div>
-                <div className="relative h-48 w-full bg-gray-100 overflow-hidden">
+            return (
+              <div
+                key={v.id}
+                className="bg-white rounded-xl border border-gray-100 hover:border-emerald-200 shadow-none hover:shadow-md transition-all overflow-hidden flex flex-col group"
+              >
+                <div className="relative h-40 w-full bg-gray-100 overflow-hidden">
                   <img
                     src={v.imageUrl}
                     alt={v.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-black text-emerald-900 shadow-sm">
-                    ${v.hourlyPrice.toFixed(2)}/hr
+                  <div className="absolute top-2.5 right-2.5 bg-white/90 backdrop-blur-sm px-2.5 py-0.5 rounded-full text-xs font-bold text-emerald-900 border border-emerald-100 shadow-2xs">
+                    ₹100/hr
                   </div>
-                  <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-xl text-[10px] text-white flex items-center gap-1 font-medium">
-                    <MapPin size={10} className="text-emerald-400" /> {v.locationHub}
+                  <div className="absolute bottom-2 left-2.5 bg-black/55 backdrop-blur-sm px-2 py-0.5 rounded-lg text-[10px] text-white flex items-center gap-1">
+                    <MapPin size={9} className="text-emerald-400" />
+                    {v.locationHub}
                   </div>
                 </div>
 
-                <div className="p-5 space-y-2.5">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <h3 className="text-sm font-bold text-gray-900 group-hover:text-emerald-700 transition-colors">
+                <div className="p-3.5 flex flex-col flex-1">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="min-w-0">
+                      <h3 className="text-xs font-bold text-gray-900 truncate group-hover:text-emerald-700 transition-colors">
                         {v.name}
                       </h3>
-                      <p className="text-xs text-gray-500">{v.model}</p>
+                      <p className="text-[11px] text-gray-500 truncate">{v.model}</p>
                     </div>
-                    <div className="flex items-center gap-1 text-xs font-bold text-amber-500 shrink-0">
-                      <Star size={12} className="fill-amber-400" />
-                      <span>{v.rating}</span>
-                    </div>
+                    {v.rating > 0 && (
+                      <div className="flex items-center gap-1 text-xs font-semibold text-amber-500 shrink-0">
+                        <Star size={11} className="fill-amber-400" />
+                        <span>{v.rating}</span>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="flex items-center gap-2 pt-1 border-t border-gray-100">
-                    <img src={v.ownerAvatar} alt="" className="w-5 h-5 rounded-full object-cover" />
-                    <span className="text-[11px] text-gray-600 truncate">Host: {v.ownerName}</span>
+                  {/* Owner-Defined Duration & Cost */}
+                  <div className="bg-emerald-50/70 border border-emerald-100 rounded-lg px-2.5 py-1.5 flex items-center justify-between text-xs mb-2">
+                    <div className="flex items-center gap-1.5">
+                      <Clock size={11} className="text-emerald-700" />
+                      <span className="text-[11px] font-bold text-emerald-950">
+                        {duration} {duration === 1 ? "Hour" : "Hours"}
+                      </span>
+                    </div>
+                    <span className="text-[11px] font-bold text-emerald-900">
+                      ₹{totalCost} total
+                    </span>
                   </div>
+
+                  {v.mustReturnBy && (
+                    <div className="flex items-center gap-1 bg-red-50 border border-red-100 rounded-lg px-2 py-1 text-[10px] mb-2">
+                      <AlertTriangle size={9} className="text-red-500 shrink-0" />
+                      <span className="text-red-600 font-semibold truncate">Return by: {v.mustReturnBy}</span>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2 pt-2 border-t border-gray-100 mb-3">
+                    <img src={v.ownerAvatar} alt="" className="w-4 h-4 rounded-full object-cover" />
+                    <span className="text-[11px] text-gray-500 truncate">Host: {v.ownerName}</span>
+                  </div>
+
+                  <button
+                    onClick={() => setSelectedVehicle(v)}
+                    className="mt-auto w-full py-2 px-3 rounded-lg border border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-700 hover:text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <span>View & Book (₹{totalCost})</span>
+                    <ArrowRight size={12} />
+                  </button>
                 </div>
               </div>
-
-              <div className="p-5 pt-0">
-                <button
-                  onClick={() => setSelectedVehicle(v)}
-                  className="w-full py-2.5 px-4 rounded-xl border border-emerald-200 text-emerald-700 bg-emerald-50/50 hover:bg-emerald-700 hover:text-white font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <span>View Details & Book</span>
-                  <ArrowRight size={13} />
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+
+        {filteredVehicles.length === 0 && (
+          <div className="text-center py-12 bg-white rounded-xl border border-gray-100">
+            <Car size={32} className="text-gray-300 mx-auto mb-3" />
+            <p className="text-sm font-semibold text-gray-500">No vehicles found</p>
+            <p className="text-xs text-gray-400 mt-1">
+              Try adjusting your search or filter.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Return Photo Upload Modal */}
       {returnModalBooking && (
         <Dialog open={!!returnModalBooking} onOpenChange={() => setReturnModalBooking(null)}>
-          <DialogContent className="max-w-md rounded-3xl bg-white p-6 sm:p-7">
+          <DialogContent className="max-w-md rounded-2xl bg-white p-6">
             <DialogHeader>
-              <DialogTitle className="text-lg font-bold text-gray-900">
+              <DialogTitle className="text-base font-bold text-gray-900">
                 Return Vehicle & Inspection Photo
               </DialogTitle>
               <DialogDescription className="text-xs text-gray-500">
@@ -430,26 +469,24 @@ export default function RenterDashboardPage() {
             </DialogHeader>
 
             <form onSubmit={handleSubmitReturnPhoto} className="space-y-4 my-2">
-              <div className="rounded-2xl overflow-hidden border border-emerald-200 bg-gray-50 max-h-56">
+              <div className="rounded-xl overflow-hidden border border-emerald-200 bg-gray-50 max-h-56">
                 <img src={returnPhotoPreview} alt="Return inspection" className="w-full h-56 object-cover" />
               </div>
 
               <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-100 text-xs space-y-1">
                 <p><strong>Ride:</strong> {returnModalBooking.vehicleName}</p>
-                <p><strong>Designated Dropoff Hub:</strong> {returnModalBooking.campusHub}</p>
+                <p><strong>Dropoff Hub:</strong> {returnModalBooking.campusHub}</p>
                 <p className="text-[10px] text-emerald-800 font-mono">
                   MinIO Key: minio://wheelzy-media/returns/ret_{returnModalBooking.id.toLowerCase()}.webp
                 </p>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Hub Parking Notes
-                </label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Hub Parking Notes</label>
                 <textarea
                   value={returnNotes}
                   onChange={(e) => setReturnNotes(e.target.value)}
-                  placeholder="e.g. Locked securely at Bay 3 bike stand. Key placed in drop-box."
+                  placeholder="e.g. Locked securely at Bay 3 bike stand."
                   rows={2}
                   className="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-600"
                 />
@@ -459,16 +496,16 @@ export default function RenterDashboardPage() {
                 <button
                   type="button"
                   onClick={() => setReturnModalBooking(null)}
-                  className="py-2.5 px-4 rounded-xl border border-gray-200 text-gray-700 text-xs font-bold"
+                  className="py-2 px-4 rounded-lg border border-gray-200 text-gray-700 text-xs font-semibold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingReturn}
-                  className="py-2.5 px-5 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 text-white text-xs font-bold shadow-md hover:from-emerald-700 hover:to-green-700 flex items-center gap-1.5"
+                  className="py-2 px-5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold flex items-center gap-1.5"
                 >
-                  <Upload size={14} />
+                  <Upload size={13} />
                   <span>{isSubmittingReturn ? "Submitting..." : "Complete Return"}</span>
                 </button>
               </DialogFooter>
@@ -480,7 +517,7 @@ export default function RenterDashboardPage() {
       {/* Vehicle Details & Instant Book Modal */}
       {selectedVehicle && (
         <Dialog open={!!selectedVehicle} onOpenChange={() => setSelectedVehicle(null)}>
-          <DialogContent className="max-w-md rounded-3xl bg-white p-6">
+          <DialogContent className="max-w-md rounded-2xl bg-white p-6">
             <DialogHeader>
               <DialogTitle className="text-base font-bold text-gray-900">
                 {selectedVehicle.name}
@@ -491,15 +528,41 @@ export default function RenterDashboardPage() {
             </DialogHeader>
 
             <div className="space-y-4 my-2">
-              <div className="rounded-2xl overflow-hidden border border-gray-200 max-h-52">
+              <div className="rounded-xl overflow-hidden border border-gray-200 max-h-52">
                 <img src={selectedVehicle.imageUrl} alt="" className="w-full h-52 object-cover" />
               </div>
 
-              <div className="bg-emerald-50/70 p-3.5 rounded-xl border border-emerald-100 text-xs space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Hourly Price:</span>
-                  <span className="font-bold text-emerald-900">${selectedVehicle.hourlyPrice.toFixed(2)}/hr</span>
-                </div>
+              {(() => {
+                const dur = getVehicleDurationHours(selectedVehicle);
+                const totalAmt = calculateRentalAmount(dur);
+
+                return (
+                  <div className="bg-emerald-50/70 p-3.5 rounded-xl border border-emerald-200 text-xs space-y-2">
+                    <div className="flex justify-between items-center pb-1.5 border-b border-emerald-100">
+                      <span className="text-gray-600 font-medium">Owner-Defined Duration:</span>
+                      <span className="font-black text-emerald-950">
+                        {dur} {dur === 1 ? "Hour" : "Hours"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 font-medium">Rental Rate:</span>
+                      <span className="font-bold text-gray-900">₹{STANDARD_HOURLY_RATE}/hr</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 font-medium">Total Rental Amount:</span>
+                      <span className="font-black text-emerald-900 text-sm">₹{totalAmt}</span>
+                    </div>
+                    {selectedVehicle.mustReturnBy && (
+                      <div className="flex justify-between items-center pt-1 border-t border-emerald-100 text-rose-700">
+                        <span className="font-semibold text-[11px]">Must Return By:</span>
+                        <span className="font-black text-[11px]">{selectedVehicle.mustReturnBy}</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
+              <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-xs space-y-1.5">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Pickup Hub:</span>
                   <span className="font-semibold text-gray-800">{selectedVehicle.locationHub}</span>
@@ -511,10 +574,10 @@ export default function RenterDashboardPage() {
               </div>
 
               <div>
-                <h4 className="text-xs font-bold text-gray-700 mb-1.5">Features & Included Gear:</h4>
+                <h4 className="text-xs font-semibold text-gray-700 mb-1.5">Features & Gear:</h4>
                 <div className="flex flex-wrap gap-1.5">
                   {selectedVehicle.features.map((f, i) => (
-                    <span key={i} className="text-[11px] px-2.5 py-1 rounded-lg bg-gray-100 text-gray-700 font-medium">
+                    <span key={i} className="text-[11px] px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 font-medium">
                       ✓ {f}
                     </span>
                   ))}
@@ -525,15 +588,15 @@ export default function RenterDashboardPage() {
             <DialogFooter className="flex gap-2">
               <button
                 onClick={() => setSelectedVehicle(null)}
-                className="py-2.5 px-4 rounded-xl border border-gray-200 text-gray-700 text-xs font-bold"
+                className="py-2 px-4 rounded-lg border border-gray-200 text-gray-700 text-xs font-semibold"
               >
                 Close
               </button>
               <button
                 onClick={() => handleInstantBook(selectedVehicle)}
-                className="py-2.5 px-5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-md"
+                className="py-2 px-5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold"
               >
-                Request Instant Booking
+                Request Booking (₹{calculateRentalAmount(getVehicleDurationHours(selectedVehicle))})
               </button>
             </DialogFooter>
           </DialogContent>
@@ -543,7 +606,7 @@ export default function RenterDashboardPage() {
       {/* Report Issue Modal */}
       {isReportOpen && (
         <Dialog open={isReportOpen} onOpenChange={setIsReportOpen}>
-          <DialogContent className="max-w-md rounded-3xl bg-white p-6">
+          <DialogContent className="max-w-md rounded-2xl bg-white p-6">
             <DialogHeader>
               <DialogTitle className="text-base font-bold text-gray-900">
                 Report a Ride Issue
@@ -555,10 +618,10 @@ export default function RenterDashboardPage() {
 
             <form onSubmit={handleSendReport} className="space-y-3 my-2">
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">Issue Category</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Issue Category</label>
                 <select
                   value={reportCategory}
-                  onChange={(e) => setReportCategory(e.target.value as any)}
+                  onChange={(e) => setReportCategory(e.target.value as IncidentReport["category"])}
                   className="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl"
                 >
                   <option value="Vehicle Damage">Vehicle Damage / Loose Part</option>
@@ -570,7 +633,7 @@ export default function RenterDashboardPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">Description</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Description</label>
                 <textarea
                   required
                   rows={3}
@@ -581,17 +644,17 @@ export default function RenterDashboardPage() {
                 />
               </div>
 
-              <DialogFooter className="flex gap-2 pt-2">
+              <DialogFooter className="flex gap-2 pt-1">
                 <button
                   type="button"
                   onClick={() => setIsReportOpen(false)}
-                  className="py-2 px-3 rounded-xl border border-gray-200 text-gray-700 text-xs font-bold"
+                  className="py-2 px-3 rounded-lg border border-gray-200 text-gray-700 text-xs font-semibold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="py-2 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md"
+                  className="py-2 px-4 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold"
                 >
                   Submit Report
                 </button>
@@ -601,7 +664,7 @@ export default function RenterDashboardPage() {
         </Dialog>
       )}
 
-      {/* In-Platform Voice Calling Modal (Call Owner) */}
+      {/* In-Platform Voice Calling Modal */}
       <InPlatformCallModal
         isOpen={Boolean(callModalBooking)}
         onClose={() => setCallModalBooking(null)}
@@ -609,13 +672,12 @@ export default function RenterDashboardPage() {
         callerRole="renter"
       />
 
-      {/* Host Student ID Preview Modal (Zero Aadhaar) */}
+      {/* Student ID Preview Modal */}
       <StudentIdPreviewModal
         isOpen={Boolean(inspectParticipant)}
         onClose={() => setInspectParticipant(null)}
         participant={inspectParticipant}
       />
-
     </div>
   );
 }

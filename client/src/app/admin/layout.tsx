@@ -10,7 +10,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <RoleGuard allowedRole="system_admin">
-      <div className="flex h-screen overflow-hidden bg-[#FAFAFD] font-sans">
+      <div className="flex h-screen overflow-hidden bg-[#F5F6F8] font-sans">
         <Sidebar
           role="system_admin"
           isOpen={mobileMenuOpen}
@@ -19,11 +19,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="flex flex-col flex-1 overflow-hidden min-w-0">
           <DashboardHeader
             role="system_admin"
-            title="System Admin Control Plane"
-            subtitle="Campus safety, verification & fleet moderation"
+            title="Platform Overview"
+            subtitle="Monitor users, vehicles and platform operations"
             onToggleMobileMenu={() => setMobileMenuOpen(true)}
           />
-          <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">{children}</main>
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
         </div>
       </div>
     </RoleGuard>

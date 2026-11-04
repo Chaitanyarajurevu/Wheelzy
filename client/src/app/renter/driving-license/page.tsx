@@ -21,16 +21,16 @@ export default function RenterDrivingLicensePage() {
   return (
     <div className="space-y-6 max-w-3xl mx-auto pb-12 font-sans">
       <div>
-        <h1 className="text-2xl font-black text-gray-900 tracking-tight">Driving License Verification</h1>
-        <p className="text-xs text-gray-500 mt-1">
+        <h1 className="text-xl font-bold text-gray-900 tracking-tight">Driving License Verification</h1>
+        <p className="text-xs text-gray-500 mt-0.5">
           Required before renting motorized scooters or motorcycles per campus transit safety regulations.
         </p>
       </div>
 
-      <div className="bg-white rounded-3xl border border-gray-100 p-6 sm:p-8 shadow-sm space-y-6">
+      <div className="bg-white rounded-2xl border border-gray-200/90 p-6 sm:p-7 shadow-2xs space-y-6">
         <div className="flex items-center justify-between pb-4 border-b border-gray-100">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100">
               <FileCheck size={20} />
             </div>
             <div>
@@ -55,7 +55,7 @@ export default function RenterDrivingLicensePage() {
               <input
                 type="text"
                 defaultValue="DL-CA-9921448"
-                className="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl font-mono"
+                className="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl font-mono focus:ring-2 focus:ring-emerald-600 outline-none"
               />
             </div>
             <div>
@@ -63,7 +63,7 @@ export default function RenterDrivingLicensePage() {
               <input
                 type="text"
                 defaultValue="California · Exp 2028-09-12"
-                className="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl"
+                className="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-600 outline-none"
               />
             </div>
           </div>
@@ -77,7 +77,7 @@ export default function RenterDrivingLicensePage() {
           <button
             type="submit"
             disabled={isUploading}
-            className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 text-white font-bold text-xs hover:from-emerald-700 hover:to-green-700 shadow-md cursor-pointer transition-all"
+            className="w-full py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-md shadow-emerald-900/20 cursor-pointer transition-all disabled:opacity-50"
           >
             {isUploading ? "Uploading..." : "Submit License for Approval"}
           </button>

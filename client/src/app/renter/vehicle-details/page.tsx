@@ -2,27 +2,36 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Car, Star, MapPin, ShieldCheck, ArrowLeft, ArrowRight, Check } from "lucide-react";
-import { dataStore } from "@/lib/dataStore";
+import { Star, MapPin, ShieldCheck, ArrowLeft, ArrowRight, Check, Clock, CalendarDays, AlertTriangle } from "lucide-react";
+import { dataStore, STANDARD_HOURLY_RATE, calculateRentalAmount, getVehicleDurationHours } from "@/lib/dataStore";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
 export default function VehicleDetailsPage() {
   const { user } = useAuth();
   const vehicles = dataStore.getVehicles();
-  const [selectedVehicle, setSelectedVehicle] = useState(vehicles[0]);
+  const [selectedVehicle] = useState(vehicles[0]);
+
+  const duration = getVehicleDurationHours(selectedVehicle);
+  const totalCost = calculateRentalAmount(duration);
 
   const handleBook = () => {
-    if (!user) return;
+    if (!user) {
+      toast.error("Please login to request a booking");
+      return;
+    }
     dataStore.createBooking({
       vehicle: selectedVehicle,
       renter: user,
-      pickupTime: "Today, 3:00 PM",
-      dropoffTime: "Today, 6:00 PM",
-      durationHours: 3,
+      pickupTime: selectedVehicle.availableFrom || "Today, 9:00 AM",
+      dropoffTime: selectedVehicle.mustReturnBy || "Today, 12:00 PM",
+      durationHours: duration,
       campusHub: selectedVehicle.locationHub,
+      mandatoryReturnDeadline: selectedVehicle.mustReturnBy,
     });
-    toast.success(`Booking request submitted for ${selectedVehicle.name}!`);
+    toast.success(
+      `Booking request submitted for ${selectedVehicle.name}! Duration: ${duration}h • Total: ₹${totalCost}.`
+    );
   };
 
   return (
@@ -35,9 +44,9 @@ export default function VehicleDetailsPage() {
           <ArrowLeft size={16} />
         </Link>
         <div>
-          <h1 className="text-2xl font-black text-gray-900 tracking-tight">Vehicle Specifications & Handover Hub</h1>
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight">Vehicle Specifications & Handover Hub</h1>
           <p className="text-xs text-gray-500 mt-0.5">
-            Verified hardware details, campus pickup zones, and included security locks.
+            Verified hardware details, campus pickup zones, and owner-defined rental schedule.
           </p>
         </div>
       </div>
@@ -46,14 +55,17 @@ export default function VehicleDetailsPage() {
         <div className="md:col-span-7 bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
           <div className="h-72 w-full bg-gray-100 relative">
             <img src={selectedVehicle.imageUrl} alt="" className="w-full h-full object-cover" />
-            <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-black text-emerald-900 shadow-sm">
-              ${selectedVehicle.hourlyPrice.toFixed(2)}/hr
+            <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-3 py-1 rounded-xl text-xs font-black text-emerald-900 shadow-sm border border-emerald-100">
+              ₹{STANDARD_HOURLY_RATE}/hr
+            </div>
+            <div className="absolute top-4 left-4 bg-[#0A1F1A]/85 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] text-white font-bold uppercase tracking-wider">
+              {selectedVehicle.vehicleType}
             </div>
           </div>
           <div className="p-6 space-y-4">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">{selectedVehicle.name}</h2>
+                <h2 className="text-lg font-bold text-gray-900">{selectedVehicle.name}</h2>
                 <p className="text-xs text-gray-500">{selectedVehicle.model}</p>
               </div>
               <div className="flex items-center gap-1 text-sm font-bold text-amber-500">
@@ -75,6 +87,10 @@ export default function VehicleDetailsPage() {
                 <span className="text-gray-500">Verified Host:</span>
                 <span className="font-semibold text-gray-800">{selectedVehicle.ownerName}</span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Rental Rate:</span>
+                <span className="font-bold text-emerald-800">₹{STANDARD_HOURLY_RATE}/hour (Fixed)</span>
+              </div>
             </div>
 
             <div>
@@ -93,16 +109,54 @@ export default function VehicleDetailsPage() {
 
         <div className="md:col-span-5 space-y-4">
           <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm space-y-4">
-            <h3 className="text-sm font-bold text-gray-900">Reserve This Ride</h3>
+            <h3 className="text-sm font-bold text-gray-900">Owner-Defined Reservation</h3>
             <p className="text-xs text-gray-500">
-              Select time slot and request instant digital handover from {selectedVehicle.ownerName}.
+              The rental period and duration are set by host {selectedVehicle.ownerName}.
             </p>
+
+            <div className="p-3.5 bg-emerald-50/70 rounded-xl border border-emerald-200 text-xs space-y-2">
+              <div className="flex justify-between text-gray-600">
+                <span className="flex items-center gap-1">
+                  <Clock size={12} className="text-emerald-700" />
+                  <span>Rental Duration:</span>
+                </span>
+                <span className="font-black text-emerald-950">
+                  {duration} {duration === 1 ? "Hour" : "Hours"}
+                </span>
+              </div>
+              <div className="flex justify-between text-gray-600">
+                <span>Hourly Rate:</span>
+                <span className="font-bold text-gray-800">₹{STANDARD_HOURLY_RATE}/hr</span>
+              </div>
+              <div className="flex justify-between text-gray-600 pt-1 border-t border-emerald-100">
+                <span className="flex items-center gap-1">
+                  <CalendarDays size={12} className="text-emerald-700" />
+                  <span>Available From:</span>
+                </span>
+                <span className="font-semibold text-gray-800">
+                  {selectedVehicle.availableFrom || "Today, 9:00 AM"}
+                </span>
+              </div>
+              <div className="flex justify-between text-rose-700">
+                <span className="flex items-center gap-1 font-semibold">
+                  <AlertTriangle size={12} className="text-rose-600" />
+                  <span>Must Return By:</span>
+                </span>
+                <span className="font-black">
+                  {selectedVehicle.mustReturnBy || "Today, 12:00 PM"}
+                </span>
+              </div>
+              <div className="flex justify-between border-t border-emerald-200 pt-2 text-emerald-900 font-bold text-sm">
+                <span>Total Amount:</span>
+                <span className="text-base font-black">₹{totalCost}</span>
+              </div>
+            </div>
 
             <button
               onClick={handleBook}
-              className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 text-white font-bold text-xs hover:from-emerald-700 hover:to-green-700 shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all"
+              className="w-full py-3 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all"
             >
-              <span>Instant Request ($3.50/hr)</span>
+              <span>Confirm Booking (₹{totalCost})</span>
               <ArrowRight size={14} />
             </button>
           </div>

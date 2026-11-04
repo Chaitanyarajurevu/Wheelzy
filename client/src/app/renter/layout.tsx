@@ -10,7 +10,7 @@ export default function RenterLayout({ children }: { children: React.ReactNode }
 
   return (
     <RoleGuard allowedRole="renter">
-      <div className="flex h-screen overflow-hidden bg-[#FAFAFD] font-sans">
+      <div className="flex h-screen overflow-hidden bg-[#F5F6F8] font-sans">
         <Sidebar
           role="renter"
           isOpen={mobileMenuOpen}
@@ -19,11 +19,11 @@ export default function RenterLayout({ children }: { children: React.ReactNode }
         <div className="flex flex-col flex-1 overflow-hidden min-w-0">
           <DashboardHeader
             role="renter"
-            title="Student Renter Dashboard"
-            subtitle="Campus rides, live bookings & return tracking"
+            title="Dashboard"
+            subtitle="Your bookings, active rides and recent activity"
             onToggleMobileMenu={() => setMobileMenuOpen(true)}
           />
-          <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">{children}</main>
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
         </div>
       </div>
     </RoleGuard>

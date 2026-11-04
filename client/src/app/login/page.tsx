@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   Zap,
   Mail,
@@ -22,6 +22,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { CAMPUS_OPTIONS } from "@/data/mockVehicles";
 import { toast } from "sonner";
+import { getPendingSearch, formatDisplaySchedule, buildBrowseSearchUrl, PendingSearchState } from "@/lib/searchState";
 import {
   Dialog,
   DialogContent,
@@ -32,10 +33,38 @@ import {
 } from "@/components/ui/dialog";
 
 function LoginContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const initialMode = searchParams.get("mode") === "signup" ? "signup" : "signin";
+  const fromSearch = searchParams.get("fromSearch") === "1";
 
-  const { login, register, isLoading } = useAuth();
+  const { user, isAuthenticated, login, register, isLoading } = useAuth();
+
+  // Check for preserved search state
+  const [pendingSearch, setPendingSearch] = React.useState<PendingSearchState | null>(null);
+  useEffect(() => {
+    const p = getPendingSearch();
+    if (p) setPendingSearch(p);
+  }, []);
+
+  // If already authenticated, redirect (with pending search if applicable)
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && user) {
+      if (user.role === "system_admin") {
+        router.replace("/admin/dashboard");
+      } else if (user.role === "owner") {
+        router.replace("/owner/dashboard");
+      } else {
+        // Renter: use pending search if present
+        const p = getPendingSearch();
+        if (p) {
+          router.replace(buildBrowseSearchUrl(p));
+        } else {
+          router.replace("/renter/dashboard");
+        }
+      }
+    }
+  }, [isLoading, isAuthenticated, user, router]);
 
   // Mode: "signin" | "signup"
   const [activeTab, setActiveTab] = useState<"signin" | "signup">(initialMode);
@@ -227,6 +256,22 @@ function LoginContent() {
                 : "Create your student renter or vehicle owner account."}
             </p>
           </div>
+
+          {/* Preserved Search State Banner */}
+          {(fromSearch || pendingSearch) && pendingSearch && (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 flex items-start gap-2.5">
+              <Sparkles className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-emerald-800">Search Details Preserved</p>
+                <p className="text-[11px] text-emerald-700 mt-0.5 truncate">
+                  {formatDisplaySchedule(pendingSearch)}
+                </p>
+                <p className="text-[11px] text-emerald-600 mt-1">
+                  Log in or sign up to view matching rides and book instantly.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Switch Tab Control */}
           <div className="grid grid-cols-2 p-1 bg-gray-100/90 rounded-2xl">

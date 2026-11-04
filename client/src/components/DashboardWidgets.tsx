@@ -20,22 +20,26 @@ export function StatCard({
   highlight = false,
 }: StatCardProps) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100/90 p-5 flex items-start justify-between shadow-xs hover:shadow-md hover:border-emerald-200/80 transition-all group">
-      <div className="space-y-1 min-w-0 pr-2">
-        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">{label}</p>
-        <p className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">{value}</p>
+    <div className="bg-white rounded-xl border border-gray-100 px-4 py-3.5 flex items-center justify-between hover:border-emerald-200 transition-all group">
+      <div className="min-w-0 pr-2">
+        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5 truncate">
+          {label}
+        </p>
+        <div className="flex items-baseline gap-1.5">
+          <p className="text-xl font-black text-gray-900 tracking-tight">{value}</p>
+          {highlight && (
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mb-0.5 shrink-0" />
+          )}
+        </div>
         {trend && (
-          <p className="text-xs text-gray-400 flex items-center gap-1">
-            {highlight && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
-            <span>{trend}</span>
-          </p>
+          <p className="text-[10px] text-gray-400 mt-0.5 truncate">{trend}</p>
         )}
       </div>
       <span
-        className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-xs transition-transform group-hover:scale-105"
+        className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
         style={{ backgroundColor: bg, color }}
       >
-        <Icon size={22} />
+        <Icon size={16} />
       </span>
     </div>
   );

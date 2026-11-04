@@ -2,25 +2,31 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Phone,
   ShieldCheck,
   CheckCircle2,
   Clock,
-  Key,
   MapPin,
-  Calendar,
-  AlertCircle,
   Camera,
   RotateCcw,
   GraduationCap,
-  Sparkles,
-  ExternalLink,
-  ChevronRight,
-  Zap,
+  AlertTriangle,
+  XCircle,
+  Flag,
 } from "lucide-react";
 import { StoredBooking, dataStore } from "@/lib/dataStore";
 import { StudentIdParticipant } from "@/components/StudentIdPreviewModal";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 interface ActiveRideCardProps {
   booking: StoredBooking;
@@ -35,14 +41,20 @@ export function ActiveRideCard({
   viewerRole,
   onInitiateCall,
   onViewStudentId,
-  onReturnRide,
 }: ActiveRideCardProps) {
+  const router = useRouter();
+
+  // Confirmation Modals State
+  const [showEndRideModal, setShowEndRideModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [isCancelling, setIsCancelling] = useState(false);
+
   // Session time remaining calculation
   const [timeRemainingText, setTimeRemainingText] = useState("In Progress");
   const [progressPercent, setProgressPercent] = useState(65);
 
   useEffect(() => {
-    // Generate a realistic session progress and remaining time display
     if (booking.status === "active") {
       setTimeRemainingText("2h 15m remaining");
       setProgressPercent(55);
@@ -55,12 +67,12 @@ export function ActiveRideCard({
     }
   }, [booking]);
 
-  // Lookup vehicle registration details
+  // Vehicle registration
   const vehicle = dataStore.getVehicleById(booking.vehicleId);
   const rcNumber =
-    vehicle?.documents?.rcNumber || `RC-CA-${booking.vehicleId.toUpperCase()}-2026`;
+    vehicle?.documents?.rcNumber || `RC-CA-${booking.vehicleId.toUpperCase()}`;
 
-  // Lookup counterparty user details
+  // Counterparty details
   const counterpartyUser =
     viewerRole === "owner"
       ? dataStore.getUserById(booking.renterId)
@@ -105,123 +117,136 @@ export function ActiveRideCard({
   };
 
   const isCallEnabled = booking.status === "active";
+  const isCancellable =
+    booking.status === "pending" ||
+    booking.status === "approved" ||
+    booking.status === "confirmed";
+
+  const handleConfirmCancel = () => {
+    setIsCancelling(true);
+    setTimeout(() => {
+      dataStore.updateBookingStatus(booking.id, "cancelled");
+      toast.success(`Booking ${booking.id} cancelled. 100% full refund initiated.`);
+      setIsCancelling(false);
+      setShowCancelModal(false);
+    }, 500);
+  };
+
+  const handleProceedToEndRide = () => {
+    setShowEndRideModal(false);
+    router.push(`/renter/return?bookingId=${booking.id}`);
+  };
 
   return (
-    <div className="relative rounded-3xl bg-white border border-gray-100 shadow-lg shadow-emerald-950/5 overflow-hidden transition-all duration-200 hover:shadow-xl font-sans">
-
-      {/* Top Highlight Banner */}
-      <div className="p-4 sm:p-5 bg-gradient-to-r from-[#031E18] via-[#053328] to-[#031E18] text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          {/* Status Badge */}
+    <div className="rounded-2xl bg-white border border-gray-200/80 shadow-xs overflow-hidden transition-all duration-200 hover:border-emerald-300 font-sans">
+      {/* Top Header Bar */}
+      <div className="px-4 py-3 bg-[#0A1F1A] text-white flex flex-wrap items-center justify-between gap-2.5">
+        <div className="flex items-center gap-2.5">
           {booking.status === "active" && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 shadow-xs uppercase tracking-wider">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 uppercase tracking-wider">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               ACTIVE
             </span>
           )}
-          {booking.status === "approved" || booking.status === "pending" ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-blue-500/20 text-blue-300 border border-blue-400/40 uppercase tracking-wider">
-              <Clock size={12} />
-              CONFIRMED
+          {(booking.status === "approved" || booking.status === "confirmed" || booking.status === "pending") && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/40 uppercase tracking-wider">
+              <Clock size={11} />
+              {booking.status === "pending" ? "PENDING" : "CONFIRMED"}
             </span>
-          ) : null}
-          {booking.status === "returned" || booking.status === "completed" ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 uppercase tracking-wider">
-              <CheckCircle2 size={12} />
-              RETURNED
+          )}
+          {(booking.status === "returned" || booking.status === "completed") && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 uppercase tracking-wider">
+              <CheckCircle2 size={11} />
+              {booking.status.toUpperCase()}
             </span>
-          ) : null}
+          )}
+          {booking.status === "cancelled" && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-500/20 text-gray-300 border border-gray-400/40 uppercase tracking-wider">
+              <XCircle size={11} />
+              CANCELLED
+            </span>
+          )}
 
-          {/* Booking ID & Vehicle Model */}
-          <span className="font-mono text-xs font-bold text-emerald-200">
+          <span className="font-mono text-xs font-semibold text-emerald-300">
             {booking.id}
           </span>
-          <span className="text-white/40 hidden md:inline">•</span>
-          <span className="text-xs text-emerald-100/80 hidden md:inline truncate max-w-[220px]">
+          <span className="text-white/30 hidden sm:inline">•</span>
+          <span className="text-xs text-gray-300 hidden sm:inline truncate max-w-[200px]">
             {booking.vehicleModel}
           </span>
         </div>
 
-        {/* Session Remaining Time Indicator */}
-        <div className="flex items-center gap-2 text-xs">
-          <Clock size={14} className="text-emerald-400 shrink-0" />
-          <span className="text-emerald-100 font-semibold">{timeRemainingText}</span>
-          <span className="text-[10px] text-emerald-300/80 font-mono px-2 py-0.5 rounded-md bg-white/10 border border-white/10">
-            Due {booking.dropoffTime}
-          </span>
+        <div className="flex items-center gap-2 text-xs text-emerald-200">
+          <Clock size={13} className="text-emerald-400 shrink-0" />
+          <span className="font-medium text-[11px]">{timeRemainingText}</span>
+          {booking.mandatoryReturnDeadline && (
+            <span className="text-[10px] text-amber-300/90 font-medium px-2 py-0.5 rounded bg-white/10 border border-white/10 hidden md:inline">
+              Deadline: {booking.mandatoryReturnDeadline}
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Session Progress Bar */}
+      {/* Progress Bar for Active Rides */}
       {booking.status === "active" && (
-        <div className="w-full bg-emerald-950/20 h-1.5 overflow-hidden">
+        <div className="w-full bg-emerald-950/20 h-1 overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-emerald-500 via-green-400 to-emerald-300 transition-all duration-500"
+            className="h-full bg-gradient-to-r from-emerald-500 to-green-400 transition-all duration-500"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
       )}
 
-      {/* Main Body Grid */}
-      <div className="p-5 sm:p-6 space-y-6">
-
-        {/* Row 1: Vehicle Details & Key Info */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
-          <div className="flex items-center gap-4">
-            <div className="relative w-20 h-16 sm:w-24 sm:h-18 rounded-2xl overflow-hidden bg-gray-100 border border-gray-200 shrink-0 shadow-sm">
+      {/* Main Content Area */}
+      <div className="p-4 sm:p-5 space-y-4">
+        {/* Row 1: Vehicle & Schedule Overview */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="relative w-18 h-14 sm:w-20 sm:h-16 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 shrink-0">
               <img
                 src={booking.vehicleImage}
                 alt={booking.vehicleName}
                 className="w-full h-full object-cover"
               />
-              <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded-md bg-black/70 text-[9px] font-bold text-white uppercase backdrop-blur-xs">
+              <span className="absolute bottom-1 right-1 px-1 rounded text-[9px] font-bold bg-black/70 text-white uppercase">
                 {booking.category}
               </span>
             </div>
 
-            <div className="space-y-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-base sm:text-lg font-black text-gray-900 tracking-tight">
-                  {booking.vehicleName}
-                </h3>
-              </div>
-              <p className="text-xs text-gray-500 font-medium">
-                {booking.vehicleModel}
-              </p>
-
-              {/* Registration Identifier */}
-              <div className="flex items-center gap-2 pt-0.5">
-                <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 border border-gray-200">
-                  Reg: {rcNumber}
+            <div className="min-w-0">
+              <h3 className="text-sm font-bold text-gray-900 truncate">
+                {booking.vehicleName}
+              </h3>
+              <p className="text-xs text-gray-500 truncate">{booking.vehicleModel}</p>
+              <div className="flex items-center gap-2 mt-1 text-[11px] text-gray-500">
+                <span className="font-mono text-[10px] bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">
+                  {rcNumber}
                 </span>
-                <span className="text-[11px] text-gray-400">•</span>
-                <span className="text-[11px] text-gray-500 flex items-center gap-1">
-                  <MapPin size={11} className="text-emerald-600" />
+                <span>•</span>
+                <span className="flex items-center gap-1 truncate">
+                  <MapPin size={10} className="text-emerald-600 shrink-0" />
                   {booking.campusHub}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Time Slot & Cost Pill */}
-          <div className="bg-gray-50/80 p-3.5 rounded-2xl border border-gray-100 self-stretch sm:self-auto text-left sm:text-right space-y-1">
-            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block">
-              Session Schedule
-            </span>
-            <div className="text-xs font-bold text-gray-800">
+          {/* Schedule & Cost */}
+          <div className="bg-gray-50 p-2.5 sm:p-3 rounded-xl border border-gray-200 text-left sm:text-right shrink-0 w-full sm:w-auto">
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Schedule</p>
+            <p className="text-xs font-semibold text-gray-800">
               {booking.pickupTime} → {booking.dropoffTime}
-            </div>
-            <div className="text-xs font-black text-emerald-800">
-              ${booking.totalCost.toFixed(2)} Total ({booking.durationHours} hrs)
-            </div>
+            </p>
+            <p className="text-xs font-bold text-emerald-800 mt-0.5">
+              ₹{booking.totalCost} Total ({booking.durationHours} {booking.durationHours === 1 ? "hr" : "hrs"})
+            </p>
           </div>
         </div>
 
-        {/* Row 2: Peer Participant Card (Privacy-Guaranteed, Student ID Only, No Phone, No Aadhaar) */}
-        <div className="bg-gradient-to-r from-emerald-50/60 via-emerald-50/30 to-green-50/60 p-4 sm:p-5 rounded-2xl border border-emerald-100/80 flex flex-col md:flex-row md:items-center justify-between gap-4">
-
-          <div className="flex items-center gap-3.5">
-            <div className="relative w-12 h-12 rounded-2xl overflow-hidden bg-white border border-emerald-200 shrink-0 shadow-xs flex items-center justify-center">
+        {/* Row 2: Counterparty Info (Student ID Only, No Aadhaar) */}
+        <div className="bg-emerald-50/50 p-3 sm:p-3.5 rounded-xl border border-emerald-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full overflow-hidden bg-white border border-emerald-200 shrink-0 flex items-center justify-center">
               {counterpartyAvatar ? (
                 <img
                   src={counterpartyAvatar}
@@ -229,163 +254,240 @@ export function ActiveRideCard({
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <GraduationCap className="w-6 h-6 text-emerald-700" />
+                <GraduationCap className="w-5 h-5 text-emerald-700" />
               )}
             </div>
 
-            <div className="space-y-0.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">
-                {viewerRole === "owner" ? "Student Renter" : "Vehicle Host"}
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-gray-900">
-                  {counterpartyName}
-                </span>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs font-bold text-gray-900 truncate">{counterpartyName}</p>
                 {isStudentVerified ? (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                    <ShieldCheck size={11} className="text-emerald-600" />
+                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    <ShieldCheck size={10} className="text-emerald-600" />
                     Student Verified
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
-                    <Clock size={11} />
+                  <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-amber-100 text-amber-800">
                     Pending
                   </span>
                 )}
               </div>
-              <p className="text-xs text-gray-500">
-                {counterpartyCampus}
+              <p className="text-[11px] text-gray-500 truncate">
+                {viewerRole === "owner" ? "Student Renter" : "Vehicle Host"} • {counterpartyCampus}
               </p>
             </div>
           </div>
 
-          {/* Student ID Proof Viewing Action */}
-          <div className="flex items-center gap-2 self-start md:self-auto">
-            <button
-              type="button"
-              onClick={handleOpenStudentIdModal}
-              className="px-3.5 py-2 rounded-xl bg-white hover:bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
-            >
-              <GraduationCap size={14} className="text-emerald-600" />
-              <span>
-                {viewerRole === "owner" ? "View Renter Student ID" : "View Host Student ID"}
-              </span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleOpenStudentIdModal}
+            className="self-start sm:self-auto px-2.5 py-1.5 rounded-lg bg-white hover:bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <GraduationCap size={13} className="text-emerald-600" />
+            <span>{viewerRole === "owner" ? "View Renter Student ID" : "View Host Student ID"}</span>
+          </button>
         </div>
 
-        {/* Digital Unlock Passcode (if active) */}
-        {booking.status === "active" && (
-          <div className="bg-emerald-950 p-4 rounded-2xl text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-inner">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-300 shrink-0">
-                <Key size={18} />
-              </div>
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-300">
-                  Smart Lock Keypad Code
-                </p>
-                <p className="text-xs text-emerald-100/80">
-                  Use this passcode to unlock the vehicle at {booking.campusHub}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-base font-black text-emerald-300 bg-black/40 px-3.5 py-1.5 rounded-xl border border-emerald-400/40 tracking-widest shadow-xs">
-                {booking.digitalUnlockCode || "WHZ-9281"}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Return Photo & Timestamp Details (if returned) */}
+        {/* Return Proof Details (if returned) */}
         {booking.status === "returned" && (
-          <div className="bg-emerald-50/60 p-4 rounded-2xl border border-emerald-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
+          <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-3">
               <img
                 src={booking.returnPhotoUrl || "/card_return.jpg"}
                 alt="Return Photo"
-                className="w-14 h-14 rounded-xl object-cover border border-emerald-200 shadow-2xs"
+                className="w-12 h-12 rounded-lg object-cover border border-gray-200 shrink-0"
               />
-              <div className="space-y-0.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">
-                  Verified Return Proof
-                </span>
-                <p className="text-xs font-bold text-gray-900">
-                  Logged at {booking.campusHub}
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">
+                  Return Submitted
                 </p>
+                <p className="font-semibold text-gray-800">{booking.campusHub}</p>
                 <p className="text-[11px] text-gray-500">
-                  Timestamp: {booking.returnTimestamp || "Today, 5:02 PM"}
+                  Logged: {booking.returnTimestamp || "Today"}
+                  {booking.returnGpsLatitude && (
+                    <span className="ml-1 text-emerald-700 font-semibold">• GPS Verified ✓</span>
+                  )}
                 </p>
               </div>
             </div>
-
-            <span className="text-xs font-bold text-emerald-800 bg-emerald-100/80 px-3 py-1.5 rounded-xl border border-emerald-200 self-start sm:self-auto">
-              ✓ Quad Hub Inspected
+            <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full self-start sm:self-auto">
+              Awaiting Host Inspection
             </span>
           </div>
         )}
 
-        {/* Row 3: Action Buttons (Call Action + Return Action) */}
-        <div className="pt-2 border-t border-gray-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-
-          {/* In-Platform Call Action */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+        {/* Actions Row */}
+        <div className="pt-2 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2.5">
+          {/* Left: Call Owner / Calling Action */}
+          <div className="flex items-center gap-2">
             <button
               type="button"
               disabled={!isCallEnabled}
               onClick={() => onInitiateCall(booking)}
-              className={`py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm ${isCallEnabled
-                  ? "bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-emerald-900/20 hover:scale-[1.01] active:scale-[0.99]"
-                  : "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed opacity-75"
-                }`}
-              title={
+              className={`py-2 px-3.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${
                 isCallEnabled
-                  ? `Initiate in-platform voice call with ${counterpartyName}`
-                  : "Calling becomes available when your ride starts"
-              }
+                  ? "bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs cursor-pointer"
+                  : "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
+              }`}
             >
-              <Phone size={15} className={isCallEnabled ? "text-emerald-100 animate-pulse" : ""} />
-              <span>
-                {viewerRole === "owner" ? "Call Renter" : "Call Owner"}
-              </span>
+              <Phone size={13} className={isCallEnabled ? "text-emerald-100" : ""} />
+              <span>{viewerRole === "owner" ? "Call Renter" : "Call Owner"}</span>
             </button>
-
             {!isCallEnabled && (
-              <span className="text-[11px] text-gray-400 italic">
+              <span className="text-[11px] text-gray-400 hidden sm:inline">
                 {booking.status === "returned" || booking.status === "completed"
                   ? "Session ended"
-                  : "Calling becomes available when your ride starts"}
+                  : "Available during active session"}
               </span>
             )}
           </div>
 
-          {/* Contextual Second Action */}
-          <div className="flex items-center gap-2">
-            {viewerRole === "renter" && booking.status === "active" && (
-              <Link
-                href="/renter/return"
-                className="w-full sm:w-auto py-2.5 px-4 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
-              >
-                <Camera size={14} className="text-emerald-700" />
-                <span>End Ride &amp; Upload Photo</span>
-              </Link>
-            )}
+          {/* Right: Renter Actions (End Ride, Upload Return Photo, Cancel Booking) */}
+          {viewerRole === "renter" && (
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Cancel Booking Action (Only for eligible states) */}
+              {isCancellable && (
+                <button
+                  type="button"
+                  onClick={() => setShowCancelModal(true)}
+                  className="py-2 px-3 rounded-lg border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  Cancel Booking
+                </button>
+              )}
 
-            {viewerRole === "owner" && booking.status === "active" && (
-              <Link
-                href="/owner/return-tracking"
-                className="w-full sm:w-auto py-2.5 px-4 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
-              >
-                <RotateCcw size={14} className="text-gray-500" />
-                <span>Return Tracking</span>
-              </Link>
-            )}
-          </div>
+              {/* Upload Return Photo */}
+              {booking.status === "active" && (
+                <Link
+                  href={`/renter/return?bookingId=${booking.id}`}
+                  className="py-2 px-3 rounded-lg border border-emerald-300 text-emerald-800 hover:bg-emerald-50 text-xs font-semibold transition-colors flex items-center gap-1.5"
+                >
+                  <Camera size={13} className="text-emerald-600" />
+                  <span>Upload Return Photo</span>
+                </Link>
+              )}
+
+              {/* End Ride Action */}
+              {booking.status === "active" && (
+                <button
+                  type="button"
+                  onClick={() => setShowEndRideModal(true)}
+                  className="py-2 px-3.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                >
+                  <RotateCcw size={13} />
+                  <span>End Ride</span>
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Owner specific action */}
+          {viewerRole === "owner" && booking.status === "active" && (
+            <Link
+              href="/owner/my-vehicles?tab=returns"
+              className="py-2 px-3.5 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 text-xs font-semibold transition-colors flex items-center gap-1.5"
+            >
+              <RotateCcw size={13} className="text-gray-500" />
+              <span>Return Tracking</span>
+            </Link>
+          )}
         </div>
-
       </div>
+
+      {/* Confirmation Dialog: End Ride */}
+      <Dialog open={showEndRideModal} onOpenChange={setShowEndRideModal}>
+        <DialogContent className="max-w-md rounded-2xl bg-white p-5 font-sans">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
+              <RotateCcw className="text-emerald-600" size={18} />
+              Confirm Ending Ride
+            </DialogTitle>
+            <DialogDescription className="text-xs text-gray-500">
+              Ending your ride requires completing the return verification at {booking.campusHub}.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="bg-emerald-50/70 p-3.5 rounded-xl border border-emerald-100 text-xs space-y-2 my-2">
+            <p className="text-gray-800 font-semibold">Before ending your session:</p>
+            <ul className="list-disc pl-4 space-y-1 text-gray-600 text-[11px]">
+              <li>Park and lock the vehicle securely at {booking.campusHub}.</li>
+              <li>You will be directed to upload a return photo with GPS location evidence.</li>
+              <li>The booking remains active until the return photo verification is submitted.</li>
+            </ul>
+          </div>
+
+          <DialogFooter className="flex gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => setShowEndRideModal(false)}
+              className="py-2 px-3.5 rounded-lg border border-gray-200 text-gray-700 text-xs font-semibold hover:bg-gray-50"
+            >
+              Keep Riding
+            </button>
+            <button
+              type="button"
+              onClick={handleProceedToEndRide}
+              className="py-2 px-4 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold shadow-xs"
+            >
+              Proceed to Return Inspection
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Dialog: Cancel Booking */}
+      <Dialog open={showCancelModal} onOpenChange={setShowCancelModal}>
+        <DialogContent className="max-w-md rounded-2xl bg-white p-5 font-sans">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
+              <AlertTriangle className="text-rose-600" size={18} />
+              Cancel Booking Reservation?
+            </DialogTitle>
+            <DialogDescription className="text-xs text-gray-500">
+              Are you sure you want to cancel booking #{booking.id} for {booking.vehicleName}?
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 my-2 text-xs">
+            <div className="bg-rose-50 border border-rose-100 p-3 rounded-xl text-rose-800 text-[11px] space-y-1">
+              <p className="font-semibold">Cancellation Policy:</p>
+              <p>100% full refund is initiated automatically for reservations cancelled prior to pickup.</p>
+              <p className="text-rose-900 font-medium">Cancellation cannot be used to return a handed-over vehicle.</p>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                Reason for cancellation (optional):
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Schedule changed, booked another ride"
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                className="w-full p-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-600"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="flex gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => setShowCancelModal(false)}
+              className="py-2 px-3.5 rounded-lg border border-gray-200 text-gray-700 text-xs font-semibold hover:bg-gray-50"
+            >
+              Keep Booking
+            </button>
+            <button
+              type="button"
+              disabled={isCancelling}
+              onClick={handleConfirmCancel}
+              className="py-2 px-4 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs"
+            >
+              {isCancelling ? "Cancelling..." : "Confirm Cancellation"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

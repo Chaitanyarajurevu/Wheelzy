@@ -5,30 +5,19 @@ import Link from "next/link";
 import {
   Car,
   PlusCircle,
-  Calendar,
   DollarSign,
-  TrendingUp,
-  Star,
   Activity,
   Inbox,
   Clock,
   CheckCircle2,
-  AlertCircle,
   AlertTriangle,
   ChevronRight,
-  ShieldCheck,
   Camera,
-  MapPin,
   Eye,
-  Key,
-  Sparkles,
-  Zap,
-  Check,
-  X,
   RotateCcw,
-  User,
-  Phone,
   GraduationCap,
+  X,
+  Check,
   List,
 } from "lucide-react";
 import { StatCard } from "@/components/DashboardWidgets";
@@ -63,7 +52,6 @@ export default function OwnerDashboardPage() {
   const [vehicles, setVehicles] = useState(dataStore.getOwnerVehicles(ownerId));
   const [bookings, setBookings] = useState(dataStore.getOwnerBookings(ownerId));
 
-  // Dialogs
   const [isAddVehicleOpen, setIsAddVehicleOpen] = useState(false);
   const [inspectBooking, setInspectBooking] = useState<StoredBooking | null>(null);
   const [inspectedParticipant, setInspectedParticipant] = useState<StudentIdParticipant | null>(null);
@@ -84,17 +72,14 @@ export default function OwnerDashboardPage() {
     });
   };
 
-  // New vehicle form state
+  // Add vehicle form state
   const [newName, setNewName] = useState("");
   const [newModel, setNewModel] = useState("");
   const [newCategory, setNewCategory] = useState<"Bike" | "Scooter">("Scooter");
-  const [newType, setNewType] = useState<StoredVehicle["vehicleType"]>("Electric Scooter");
-  const [newCampus, setNewCampus] = useState(user?.campus || "UC Berkeley");
+  const [newType, setNewType] = useState<StoredVehicle["vehicleType"]>("Electric Scooter");  const [newCampus, setNewCampus] = useState(user?.campus || "UC Berkeley");
   const [newHub, setNewHub] = useState("Sproul Plaza Hub");
   const [newPrice, setNewPrice] = useState("4.00");
   const [newRcNumber, setNewRcNumber] = useState("");
-
-  // Mandatory Availability and Return Schedule fields
   const [newAvailableFromDate, setNewAvailableFromDate] = useState("2026-10-28");
   const [newAvailableFromTime, setNewAvailableFromTime] = useState("10:00 AM");
   const [newReturnDate, setNewReturnDate] = useState("2026-10-28");
@@ -113,35 +98,37 @@ export default function OwnerDashboardPage() {
     return () => window.removeEventListener("wheelzy-store-update", handleUpdate);
   }, [ownerId]);
 
-  // Actions
   const handleAcceptRequest = (booking: StoredBooking) => {
-    dataStore.updateBookingStatus(booking.id, "active");
-    toast.success(`Booking ${booking.id} accepted! Ride is now active.`);
-    reloadData();
+    const res = dataStore.approveBooking(booking.id);
+    if (res.success) {
+      toast.success(`Booking ${booking.id} approved! Reserved for ${booking.renterName}.`);
+      reloadData();
+    } else {
+      toast.error(res.error || "Failed to approve booking.");
+    }
   };
 
   const handleRejectRequest = (booking: StoredBooking) => {
-    dataStore.updateBookingStatus(booking.id, "cancelled");
-    toast.error(`Booking request ${booking.id} declined.`);
-    reloadData();
+    const res = dataStore.rejectBooking(booking.id);
+    if (res.success) {
+      toast.error(`Booking request ${booking.id} declined.`);
+      reloadData();
+    } else {
+      toast.error(res.error || "Failed to decline booking.");
+    }
   };
 
   const handleConfirmReturnInspection = (booking: StoredBooking) => {
     dataStore.updateBookingStatus(booking.id, "completed");
-    toast.success(`Return verified! ${booking.vehicleName} is back in your available fleet.`);
+    toast.success(`Return verified! ${booking.vehicleName} completed. Set a new availability schedule in My Vehicle before listing again.`);
     setInspectBooking(null);
     reloadData();
   };
 
-  // Validation for schedule
   const scheduleValidation = useMemo(() => {
     if (!newAvailableFromDate || !newAvailableFromTime || !newReturnDate || !newReturnTime) {
-      return {
-        isValid: false,
-        message: "All 4 availability start and mandatory return fields are required.",
-      };
+      return { isValid: false, message: "All 4 availability start and mandatory return fields are required." };
     }
-
     const parseToTime = (timeStr: string) => {
       const isPM = /pm/i.test(timeStr);
       const isAM = /am/i.test(timeStr);
@@ -153,23 +140,15 @@ export default function OwnerDashboardPage() {
       if (isAM && h === 12) h = 0;
       return { h, m };
     };
-
     const startT = parseToTime(newAvailableFromTime);
     const returnT = parseToTime(newReturnTime);
-
     const startObj = new Date(newAvailableFromDate);
     startObj.setHours(startT.h, startT.m, 0, 0);
-
     const returnObj = new Date(newReturnDate);
     returnObj.setHours(returnT.h, returnT.m, 0, 0);
-
     if (returnObj.getTime() <= startObj.getTime()) {
-      return {
-        isValid: false,
-        message: "Mandatory return date and time must be later than availability start date and time.",
-      };
+      return { isValid: false, message: "Mandatory return date/time must be later than availability start." };
     }
-
     return { isValid: true, message: "" };
   }, [newAvailableFromDate, newAvailableFromTime, newReturnDate, newReturnTime]);
 
@@ -179,20 +158,16 @@ export default function OwnerDashboardPage() {
       toast.error("Please fill in all vehicle specifications.");
       return;
     }
-
     if (!scheduleValidation.isValid) {
       toast.error(scheduleValidation.message);
       return;
     }
-
     const formatDateText = (dStr: string) => {
       const d = new Date(dStr);
       return d.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
     };
-
     const fromFormatted = `${formatDateText(newAvailableFromDate)}, ${newAvailableFromTime}`;
     const returnFormatted = `${formatDateText(newReturnDate)}, ${newReturnTime}`;
-
     dataStore.addVehicle({
       name: newName,
       model: newModel,
@@ -221,7 +196,6 @@ export default function OwnerDashboardPage() {
         verified: false,
       },
     });
-
     toast.success(`${newName} submitted for admin verification! Return deadline: ${returnFormatted}.`);
     setIsAddVehicleOpen(false);
     setNewName("");
@@ -233,45 +207,38 @@ export default function OwnerDashboardPage() {
   const activeRentals = bookings.filter((b) => b.status === "active" || b.status === "overdue");
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-16 font-sans">
-      {/* 1. Header with Direct Links */}
-      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-[#031E18] via-[#053328] to-[#04261E] text-white p-7 sm:p-9 shadow-xl border border-emerald-500/30">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-400/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-bold text-emerald-300 border border-white/15">
-              <Zap className="w-4 h-4 text-emerald-400" />
-              <span>VEHICLE OWNER DASHBOARD</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-              Welcome back, {user?.name?.split(" ")[0] || "Host"}!
-            </h1>
-            <p className="text-xs sm:text-sm text-emerald-100/90 max-w-xl leading-relaxed">
-              Manage your student rental fleet at {user?.campus || "UC Berkeley"}. Keep track of active campus rides, review peer requests, and set mandatory return deadlines.
-            </p>
-          </div>
+    <div className="max-w-7xl mx-auto pb-12 space-y-6 font-sans">
 
-          <div className="flex flex-wrap items-center gap-2.5">
+      {/* Page Heading */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-bold text-gray-900">Dashboard</h1>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Manage your vehicles and rental activity.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {vehicles.length === 0 && (
             <button
               onClick={() => setIsAddVehicleOpen(true)}
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 text-white font-bold text-xs hover:from-emerald-600 hover:to-green-600 shadow-md shadow-emerald-950/20 flex items-center gap-2 cursor-pointer transition-all"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-800 transition-colors cursor-pointer"
             >
-              <PlusCircle className="w-4 h-4" />
+              <PlusCircle size={13} />
               <span>Add Vehicle</span>
             </button>
-            <Link
-              href="/owner/listings"
-              className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold text-xs backdrop-blur-md transition-all flex items-center gap-2"
-            >
-              <List className="w-4 h-4 text-emerald-300" />
-              <span>Fleet Listings</span>
-            </Link>
-          </div>
+          )}
+          <Link
+            href="/owner/my-vehicles"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 text-gray-600 text-xs font-semibold hover:bg-gray-50 transition-colors"
+          >
+            <Car size={13} />
+            <span className="hidden sm:inline">My Vehicle</span>
+          </Link>
         </div>
       </div>
 
-      {/* 2. Overview Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+      {/* Stats Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <StatCard
           label="Total Vehicles"
           value={stats.totalVehicles}
@@ -286,7 +253,7 @@ export default function OwnerDashboardPage() {
           icon={CheckCircle2}
           trend="Ready to rent"
           color="#10B981"
-          bg="#ECFDF5"
+          bg="#D1FAE5"
         />
         <StatCard
           label="Pending Approval"
@@ -316,7 +283,7 @@ export default function OwnerDashboardPage() {
           highlight={stats.activeRentals > 0}
         />
         <StatCard
-          label="Returned / Done"
+          label="Returned"
           value={stats.completedReturnedRentals}
           icon={RotateCcw}
           trend="Inspected"
@@ -325,29 +292,28 @@ export default function OwnerDashboardPage() {
         />
       </div>
 
-      {/* 3. PROMINENT ACTIVE RIDES SECTION */}
+      {/* Active Rides Section */}
       {activeRentals.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
-              <h2 className="text-base sm:text-lg font-black tracking-tight text-gray-900 flex items-center gap-2">
-                <span>Active Campus Rides ({activeRentals.length})</span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                  Live on Campus
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <h2 className="text-sm font-bold text-gray-900">
+                Active Campus Rides
+                <span className="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  {activeRentals.length} Live
                 </span>
               </h2>
             </div>
             <Link
               href="/owner/active-rides"
-              className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 hover:underline"
+              className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 hover:underline"
             >
-              <span>Manage in Active Rides Hub</span>
-              <ChevronRight size={14} />
+              Manage All
+              <ChevronRight size={13} />
             </Link>
           </div>
-
-          <div className="grid grid-cols-1 gap-5">
+          <div className="space-y-3">
             {activeRentals.map((rental) => (
               <ActiveRideCard
                 key={rental.id}
@@ -361,71 +327,82 @@ export default function OwnerDashboardPage() {
         </div>
       )}
 
-      {/* 4. Booking Requests Section */}
+      {/* Pending Booking Requests */}
       {pendingRequests.length > 0 && (
-        <div className="bg-amber-50/70 border border-amber-200/80 rounded-3xl p-5 sm:p-6 space-y-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
-              <h2 className="text-base font-black text-amber-950">
-                Pending Booking Requests ({pendingRequests.length})
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+              <h2 className="text-sm font-bold text-gray-900">
+                Pending Booking Requests
+                <span className="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                  {pendingRequests.length} New
+                </span>
               </h2>
             </div>
             <Link
               href="/owner/booking-requests"
-              className="text-xs font-bold text-amber-800 hover:text-amber-950 flex items-center gap-1"
+              className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 hover:underline"
             >
-              <span>View All</span>
-              <ChevronRight size={14} />
+              View All
+              <ChevronRight size={13} />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
             {pendingRequests.map((req) => (
               <div
                 key={req.id}
-                className="bg-white rounded-2xl p-4 border border-amber-200/60 shadow-xs flex flex-col justify-between gap-3"
+                className="bg-white rounded-xl border border-amber-100 hover:border-amber-200 p-4 flex flex-col sm:flex-row sm:items-center gap-4 transition-all"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <span className="text-[10px] font-mono font-bold text-gray-500 uppercase">{req.id}</span>
-                    <h3 className="text-sm font-bold text-gray-900">{req.vehicleName}</h3>
-                    <p className="text-xs text-gray-600 mt-0.5">
-                      Renter: <strong>{req.renterName}</strong> ({req.renterCampus.split("·")[0]})
-                    </p>
-                    <p className="text-xs text-emerald-800 font-semibold mt-1">
-                      {req.pickupTime} → {req.dropoffTime} ({req.durationHours} hrs)
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <img
+                    src={req.renterAvatar}
+                    alt=""
+                    className="w-9 h-9 rounded-full object-cover shrink-0 ring-2 ring-emerald-100"
+                  />
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs font-bold text-gray-900">{req.renterName}</p>
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                        ✓ Student
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-gray-600 truncate">
+                      {req.vehicleName} · {req.pickupTime} → {req.dropoffTime}
                     </p>
                     {req.mandatoryReturnDeadline && (
-                      <p className="text-[11px] font-bold text-amber-800 mt-0.5">
-                        Must Return By: {req.mandatoryReturnDeadline}
+                      <p className="text-[10px] font-semibold text-amber-700 mt-0.5">
+                        Must return by: {req.mandatoryReturnDeadline}
                       </p>
                     )}
                   </div>
-                  <span className="text-sm font-black text-gray-900 bg-gray-50 px-2.5 py-1 rounded-xl border border-gray-100">
-                    ${req.totalCost.toFixed(2)}
-                  </span>
                 </div>
 
-                <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-sm font-bold text-gray-900 hidden sm:block">
+                    ₹{req.totalCost || req.durationHours * 100}
+                  </span>
+                  <span className="text-[10px] font-mono text-gray-400 hidden lg:block">{req.id}</span>
                   <button
                     onClick={() => handleInspectKyc(req)}
-                    className="py-2 px-3 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                    className="py-1.5 px-2.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 text-xs font-semibold flex items-center gap-1 cursor-pointer"
                   >
-                    <GraduationCap size={13} className="text-emerald-600" />
-                    <span>View Student ID</span>
+                    <GraduationCap size={12} className="text-emerald-600" />
+                    <span className="hidden sm:inline">Student ID</span>
                   </button>
                   <button
                     onClick={() => handleAcceptRequest(req)}
-                    className="py-2 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex-1 cursor-pointer"
+                    className="py-1.5 px-3 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold cursor-pointer flex items-center gap-1"
                   >
-                    Accept
+                    <Check size={12} />
+                    <span>Accept</span>
                   </button>
                   <button
                     onClick={() => handleRejectRequest(req)}
-                    className="py-2 px-3 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-bold cursor-pointer"
+                    className="py-1.5 px-2.5 rounded-lg border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-semibold cursor-pointer"
                   >
-                    Decline
+                    <X size={12} />
                   </button>
                 </div>
               </div>
@@ -434,23 +411,101 @@ export default function OwnerDashboardPage() {
         </div>
       )}
 
-      {/* 5. Add Vehicle Modal */}
+      {/* My Vehicles Table */}
+      {vehicles.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-bold text-gray-900">My Registered Vehicle</h2>
+            <Link
+              href="/owner/my-vehicles"
+              className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 hover:underline"
+            >
+              Manage Vehicle
+              <ChevronRight size={13} />
+            </Link>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+            <Table>
+              <TableHeader className="bg-gray-50/60">
+                <TableRow>
+                  <TableHead className="text-[11px] font-semibold text-gray-500">Vehicle</TableHead>
+                  <TableHead className="text-[11px] font-semibold text-gray-500 hidden sm:table-cell">Price</TableHead>
+                  <TableHead className="text-[11px] font-semibold text-gray-500 hidden md:table-cell">Return Deadline</TableHead>
+                  <TableHead className="text-[11px] font-semibold text-gray-500">Status</TableHead>
+                  <TableHead className="text-[11px] font-semibold text-gray-500 text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {vehicles.slice(0, 5).map((v) => (
+                  <TableRow key={v.id} className="hover:bg-gray-50/50">
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={v.imageUrl}
+                          alt=""
+                          className="w-10 h-9 rounded-lg object-cover shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold text-gray-900 truncate">{v.name}</p>
+                          <p className="text-[11px] text-gray-500 truncate">{v.model}</p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      <span className="text-xs font-semibold text-gray-800">₹{v.hourlyPrice || 100}/hr</span>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {v.mustReturnBy ? (
+                        <span className="text-[11px] text-amber-700 font-medium">{v.mustReturnBy}</span>
+                      ) : (
+                        <span className="text-[11px] text-gray-400">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        v.status === "approved"
+                          ? "bg-emerald-100 text-emerald-800"
+                          : v.status === "pending_approval"
+                          ? "bg-amber-100 text-amber-800"
+                          : "bg-gray-100 text-gray-600"
+                      }`}>
+                        {v.status === "pending_approval" ? "Pending" : v.status === "approved" ? "Active" : v.status}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Link
+                        href="/owner/my-vehicles"
+                        className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 hover:underline"
+                      >
+                        Manage
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      )}
+
+      {/* Add Vehicle Modal */}
       {isAddVehicleOpen && (
         <Dialog open={isAddVehicleOpen} onOpenChange={setIsAddVehicleOpen}>
-          <DialogContent className="max-w-lg rounded-3xl bg-white p-6 max-h-[90vh] overflow-y-auto font-sans">
+          <DialogContent className="max-w-lg rounded-2xl bg-white p-6 max-h-[90vh] overflow-y-auto font-sans">
             <DialogHeader>
-              <DialogTitle className="text-lg font-bold text-gray-900">
+              <DialogTitle className="text-base font-bold text-gray-900">
                 List a Student Vehicle
               </DialogTitle>
               <DialogDescription className="text-xs text-gray-500">
-                Specify hardware specifications and the mandatory return deadline before publishing your listing.
+                Specify hardware specifications and the mandatory return deadline before publishing.
               </DialogDescription>
             </DialogHeader>
 
             <form onSubmit={handleCreateVehicle} className="space-y-4 my-2">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">Brand &amp; Model Name</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Brand & Model Name</label>
                   <input
                     type="text"
                     required
@@ -461,11 +516,11 @@ export default function OwnerDashboardPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">Model Trim / Specs</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Model Trim / Specs</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. 110cc Smart Key Edition"
+                    placeholder="e.g. 110cc Smart Key"
                     value={newModel}
                     onChange={(e) => setNewModel(e.target.value)}
                     className="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-600"
@@ -475,7 +530,7 @@ export default function OwnerDashboardPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">Category</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Category</label>
                   <select
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value as any)}
@@ -486,7 +541,7 @@ export default function OwnerDashboardPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">Vehicle Type</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Vehicle Type</label>
                   <select
                     value={newType}
                     onChange={(e) => setNewType(e.target.value as any)}
@@ -502,7 +557,7 @@ export default function OwnerDashboardPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">Hourly Price ($/hr)</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Hourly Price ($/hr)</label>
                   <input
                     type="number"
                     step="0.5"
@@ -513,7 +568,7 @@ export default function OwnerDashboardPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">Designated Pickup Hub</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Pickup Hub</label>
                   <input
                     type="text"
                     value={newHub}
@@ -523,18 +578,18 @@ export default function OwnerDashboardPage() {
                 </div>
               </div>
 
-              {/* Mandatory Return Schedule Fields */}
-              <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-4 space-y-3">
+              {/* Mandatory Return Schedule */}
+              <div className="bg-amber-50/80 border border-amber-200 rounded-xl p-4 space-y-3">
                 <div className="flex items-center gap-1.5">
-                  <Clock className="w-4 h-4 text-amber-700" />
+                  <Clock className="w-3.5 h-3.5 text-amber-700" />
                   <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">
-                    Mandatory Vehicle Return Schedule (Required)
+                    Mandatory Return Schedule
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-bold text-gray-700 mb-1 text-[11px]">Available From</label>
+                    <label className="block text-[11px] font-semibold text-gray-700 mb-1">Available From</label>
                     <input
                       type="date"
                       required
@@ -544,11 +599,11 @@ export default function OwnerDashboardPage() {
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-gray-700 mb-1 text-[11px]">Available From Time</label>
+                    <label className="block text-[11px] font-semibold text-gray-700 mb-1">From Time</label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. 10:00 AM"
+                      placeholder="10:00 AM"
                       value={newAvailableFromTime}
                       onChange={(e) => setNewAvailableFromTime(e.target.value)}
                       className="w-full p-2 bg-white border border-gray-200 rounded-xl text-xs"
@@ -556,9 +611,9 @@ export default function OwnerDashboardPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-bold text-gray-700 mb-1 text-[11px]">Must Return By</label>
+                    <label className="block text-[11px] font-semibold text-gray-700 mb-1">Must Return By</label>
                     <input
                       type="date"
                       required
@@ -568,11 +623,11 @@ export default function OwnerDashboardPage() {
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-gray-700 mb-1 text-[11px]">Return Time</label>
+                    <label className="block text-[11px] font-semibold text-gray-700 mb-1">Return Time</label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. 1:00 PM"
+                      placeholder="1:00 PM"
                       value={newReturnTime}
                       onChange={(e) => setNewReturnTime(e.target.value)}
                       className="w-full p-2 bg-white border border-gray-200 rounded-xl text-xs"
@@ -581,20 +636,20 @@ export default function OwnerDashboardPage() {
                 </div>
 
                 {!scheduleValidation.isValid ? (
-                  <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2">
-                    <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2">
+                    <AlertTriangle className="w-3.5 h-3.5 text-rose-600 shrink-0 mt-0.5" />
                     <span>{scheduleValidation.message}</span>
                   </div>
                 ) : (
-                  <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Schedule confirmed: Must return by {newReturnDate}, {newReturnTime}.</span>
+                  <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>Return confirmed: {newReturnDate}, {newReturnTime}</span>
                   </div>
                 )}
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">RC / Registration Number</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">RC / Registration Number</label>
                 <input
                   type="text"
                   placeholder="e.g. CA-EBIKE-92812"
@@ -604,20 +659,20 @@ export default function OwnerDashboardPage() {
                 />
               </div>
 
-              <DialogFooter className="flex gap-2 pt-2">
+              <DialogFooter className="flex gap-2 pt-1">
                 <button
                   type="button"
                   onClick={() => setIsAddVehicleOpen(false)}
-                  className="py-2.5 px-4 rounded-xl border border-gray-200 text-gray-600 font-bold text-xs"
+                  className="py-2 px-4 rounded-lg border border-gray-200 text-gray-600 font-semibold text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={!scheduleValidation.isValid}
-                  className={`py-2.5 px-5 rounded-xl text-white font-bold text-xs shadow-md ${
+                  className={`py-2 px-5 rounded-lg text-white font-semibold text-xs ${
                     scheduleValidation.isValid
-                      ? "bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 cursor-pointer"
+                      ? "bg-emerald-700 hover:bg-emerald-800 cursor-pointer"
                       : "bg-gray-300 text-gray-500 cursor-not-allowed"
                   }`}
                 >
@@ -632,7 +687,7 @@ export default function OwnerDashboardPage() {
       {/* Return Photo Inspection Modal */}
       {inspectBooking && (
         <Dialog open={!!inspectBooking} onOpenChange={() => setInspectBooking(null)}>
-          <DialogContent className="max-w-md rounded-3xl bg-white p-6">
+          <DialogContent className="max-w-md rounded-2xl bg-white p-6">
             <DialogHeader>
               <DialogTitle className="text-base font-bold text-gray-900">
                 Return Photo Inspection
@@ -643,10 +698,9 @@ export default function OwnerDashboardPage() {
             </DialogHeader>
 
             <div className="space-y-3 my-3">
-              <div className="rounded-2xl overflow-hidden border border-gray-200 bg-black">
+              <div className="rounded-xl overflow-hidden border border-gray-200 bg-black">
                 <img src={inspectBooking.returnPhotoUrl} alt="Return photo" className="w-full max-h-72 object-contain" />
               </div>
-
               <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-100 text-xs space-y-1">
                 <p><strong>Campus Hub:</strong> {inspectBooking.campusHub}</p>
                 <p><strong>Return Notes:</strong> {inspectBooking.returnNotes}</p>
@@ -657,15 +711,15 @@ export default function OwnerDashboardPage() {
             <DialogFooter className="flex gap-2">
               <button
                 onClick={() => setInspectBooking(null)}
-                className="py-2.5 px-4 rounded-xl border border-gray-200 text-gray-700 font-bold text-xs"
+                className="py-2 px-4 rounded-lg border border-gray-200 text-gray-700 font-semibold text-xs"
               >
                 Close
               </button>
               <button
                 onClick={() => handleConfirmReturnInspection(inspectBooking)}
-                className="py-2.5 px-5 rounded-xl bg-emerald-700 text-white font-bold text-xs hover:bg-emerald-800"
+                className="py-2 px-5 rounded-lg bg-emerald-700 text-white font-semibold text-xs hover:bg-emerald-800"
               >
-                Approve &amp; Mark Completed
+                Approve & Mark Completed
               </button>
             </DialogFooter>
           </DialogContent>

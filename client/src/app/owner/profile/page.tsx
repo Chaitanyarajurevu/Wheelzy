@@ -129,7 +129,7 @@ export default function OwnerProfilePage() {
           {/* Quick Switcher & Fleet Actions */}
           <div className="flex flex-wrap sm:flex-col items-start sm:items-end gap-2">
             <Link
-              href="/owner/add-vehicle"
+              href="/owner/my-vehicles?tab=add"
               className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
             >
               <PlusCircle size={13} />

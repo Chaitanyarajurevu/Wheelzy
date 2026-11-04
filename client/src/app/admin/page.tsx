@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import {
   Users,
   GraduationCap,
@@ -10,23 +9,17 @@ import {
   BookOpen,
   AlertTriangle,
   Activity,
-  FileCheck,
   CheckCircle2,
   XCircle,
   Clock,
   ShieldCheck,
   Search,
-  Filter,
   ChevronRight,
-  Shield,
   Eye,
   Check,
   X,
-  ExternalLink,
-  Sparkles,
   UserCheck,
   UserX,
-  AlertCircle,
   Zap,
   RotateCcw,
 } from "lucide-react";
@@ -60,7 +53,6 @@ export default function AdminDashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTab, setSelectedTab] = useState<"verifications" | "users" | "reports">("verifications");
 
-  // Dialog states
   const [selectedVerif, setSelectedVerif] = useState<VerificationRequest | null>(null);
   const [selectedReport, setSelectedReport] = useState<IncidentReport | null>(null);
   const [resolutionNote, setResolutionNote] = useState("");
@@ -80,7 +72,6 @@ export default function AdminDashboardPage() {
     return () => window.removeEventListener("wheelzy-store-update", handleUpdate);
   }, []);
 
-  // Admin Actions
   const handleApproveVerification = (verif: VerificationRequest) => {
     dataStore.reviewVerification(verif.id, "approved");
     toast.success(`Approved verification for ${verif.userName}`);
@@ -114,18 +105,11 @@ export default function AdminDashboardPage() {
     reloadData();
   };
 
-  // Filtered views
   const pendingVerifications = verifications.filter((v) =>
     v.status === "pending" &&
     (v.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
      v.documentTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
      v.campus.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
-
-  const filteredBookings = bookings.filter((b) =>
-    b.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    b.renterName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    b.vehicleName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const filteredUsers = users.filter((u) =>
@@ -141,62 +125,48 @@ export default function AdminDashboardPage() {
   );
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-16 font-sans">
-      
-      {/* 1. Admin Hero Banner */}
-      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-[#022C22] via-[#064E3B] to-[#047857] text-white p-7 sm:p-9 shadow-xl border border-emerald-500/20">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        
-        <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-          <div className="space-y-2.5 max-w-2xl">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-bold text-emerald-300 border border-white/15">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>SYSTEM ADMINISTRATOR CONTROL PLANE</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
-              Campus Fleet & Verification Operations
-            </h1>
-            <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed">
-              Verify college student credentials, approve vehicle listings, manage active quad rentals, and oversee platform integrity.
-            </p>
-          </div>
+    <div className="max-w-7xl mx-auto pb-12 space-y-6 font-sans">
 
-          <div className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/admin/student-verification"
-              className="px-4 py-2.5 rounded-xl bg-white text-emerald-900 font-bold text-xs hover:bg-emerald-50 shadow-md transition-all flex items-center gap-2"
-            >
-              <GraduationCap className="w-4 h-4 text-emerald-700" />
-              <span>Verify Students ({stats.pendingVerifications})</span>
-            </Link>
-            <Link
-              href="/admin/vehicles"
-              className="px-4 py-2.5 rounded-xl bg-white/15 backdrop-blur-md text-white font-bold text-xs hover:bg-white/20 border border-white/20 transition-all flex items-center gap-2"
-            >
-              <Car className="w-4 h-4 text-emerald-300" />
-              <span>Manage Vehicles</span>
-            </Link>
-          </div>
+      {/* Page Heading */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-bold text-gray-900">Platform Overview</h1>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Monitor users, vehicles and platform operations.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/student-verification"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-800 transition-colors"
+          >
+            <GraduationCap size={13} />
+            <span>Verify Students</span>
+            {stats.pendingStudentVerifications > 0 && (
+              <span className="bg-white text-emerald-800 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                {stats.pendingStudentVerifications}
+              </span>
+            )}
+          </Link>
+          <Link
+            href="/admin/vehicles"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 text-gray-600 text-xs font-semibold hover:bg-gray-50 transition-colors"
+          >
+            <Car size={13} />
+            <span className="hidden sm:inline">Manage Vehicles</span>
+          </Link>
         </div>
       </div>
 
-      {/* 2. Mandatory Overview Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-9 gap-3 sm:gap-4">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 gap-3">
         <StatCard
           label="Total Bookings"
           value={stats.totalBookings}
           icon={BookOpen}
-          trend="All-time ledger"
+          trend="All-time"
           color="#059669"
           bg="#ECFDF5"
-        />
-        <StatCard
-          label="Recent Bookings"
-          value={stats.recentBookings}
-          icon={Activity}
-          trend="Active window"
-          color="#0284C7"
-          bg="#E0F2FE"
         />
         <StatCard
           label="Active Rides"
@@ -208,20 +178,12 @@ export default function AdminDashboardPage() {
           highlight={stats.activeRides > 0}
         />
         <StatCard
-          label="Returned Bookings"
+          label="Returned"
           value={stats.returnedBookings}
           icon={RotateCcw}
           trend="Photo dropoff"
           color="#0D9488"
           bg="#CCFBF1"
-        />
-        <StatCard
-          label="Cancelled Bookings"
-          value={stats.cancelledBookings}
-          icon={XCircle}
-          trend="Prior to trip"
-          color="#64748B"
-          bg="#F1F5F9"
         />
         <StatCard
           label="Pending Requests"
@@ -261,132 +223,143 @@ export default function AdminDashboardPage() {
         />
       </div>
 
-      {/* 3. Prominent Recent Bookings Section */}
-      <RecentBookingsSection
-        title="Recent Bookings"
-        subtitle="Live feed of campus peer-to-peer bike and scooter reservations, active trips, and handover verifications. Displays the most recent bookings first."
-        itemsPerPage={6}
-        showViewAllLink={true}
-      />
+      {/* Recent Bookings */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-bold text-gray-900">Recent Bookings</h2>
+          <Link
+            href="/admin/recent-bookings"
+            className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 hover:underline"
+          >
+            View All
+            <ChevronRight size={13} />
+          </Link>
+        </div>
+        <RecentBookingsSection
+          title=""
+          subtitle=""
+          itemsPerPage={5}
+          showViewAllLink={false}
+        />
+      </div>
 
-      {/* 3. Operational Tables & Verification Action Center */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-        
-        {/* Navigation Tabs & Search */}
-        <div className="p-5 sm:p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-1.5 p-1 bg-gray-50 rounded-2xl w-fit border border-gray-200/60">
+      {/* Operational Tables */}
+      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+
+        {/* Tab Nav + Search */}
+        <div className="px-5 py-3.5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-0.5 p-0.5 bg-gray-100 rounded-lg">
             <button
               onClick={() => setSelectedTab("verifications")}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                 selectedTab === "verifications"
-                  ? "bg-gradient-to-r from-emerald-600 to-green-500 text-white shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
+                  ? "bg-emerald-700 text-white shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
               }`}
             >
-              <span>Pending Verifications</span>
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+              <ShieldCheck size={12} />
+              <span>Verifications</span>
+              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
                 selectedTab === "verifications" ? "bg-white/20 text-white" : "bg-emerald-100 text-emerald-800"
               }`}>
-                {verifications.filter(v => v.status === "pending").length}
+                {verifications.filter((v) => v.status === "pending").length}
               </span>
             </button>
-
-
-
             <button
               onClick={() => setSelectedTab("users")}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
                 selectedTab === "users"
-                  ? "bg-gradient-to-r from-emerald-600 to-green-500 text-white shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
+                  ? "bg-emerald-700 text-white shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
               }`}
             >
               User Accounts ({users.length})
             </button>
-
             <button
               onClick={() => setSelectedTab("reports")}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                 selectedTab === "reports"
-                  ? "bg-gradient-to-r from-emerald-600 to-green-500 text-white shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
+                  ? "bg-emerald-700 text-white shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
               }`}
             >
-              <span>Complaints</span>
+              <span>Reports</span>
               {stats.openReports > 0 && (
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                  selectedTab === "reports" ? "bg-white/20 text-white" : "bg-rose-100 text-rose-700"
+                }`}>
+                  {stats.openReports}
+                </span>
               )}
             </button>
           </div>
 
-          <div className="relative w-full md:w-72">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Search by name, ride ID, campus..."
+              placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-600"
+              className="pl-8 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 w-52"
             />
           </div>
         </div>
 
-        {/* Tab 1: Pending Verifications Queue */}
+        {/* Tab: Pending Verifications */}
         {selectedTab === "verifications" && (
-          <div className="p-4 sm:p-6">
+          <div className="p-4">
             {pendingVerifications.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {pendingVerifications.map((verif) => (
                   <div
                     key={verif.id}
-                    className="p-5 rounded-2xl border border-gray-100 hover:border-emerald-200 bg-white hover:shadow-md transition-all space-y-4"
+                    className="p-4 rounded-xl border border-gray-100 hover:border-emerald-200 bg-gray-50/40 hover:bg-white transition-all space-y-3"
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5">
                         <img
                           src={verif.userAvatar}
                           alt={verif.userName}
-                          className="w-10 h-10 rounded-xl object-cover ring-2 ring-emerald-100"
+                          className="w-9 h-9 rounded-full object-cover ring-2 ring-emerald-100 shrink-0"
                         />
-                        <div>
-                          <p className="text-sm font-bold text-gray-900">{verif.userName}</p>
-                          <p className="text-xs text-gray-500">{verif.campus}</p>
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold text-gray-900 truncate">{verif.userName}</p>
+                          <p className="text-[10px] text-gray-500 truncate">{verif.campus}</p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-semibold text-gray-400">{verif.submittedAt}</span>
+                      <span className="text-[10px] font-medium text-gray-400 shrink-0">{verif.submittedAt}</span>
                     </div>
 
-                    <div className="bg-emerald-50/60 rounded-xl p-3 border border-emerald-100/60 space-y-1">
+                    <div className="bg-white rounded-lg p-2.5 border border-gray-200 space-y-1">
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="font-bold text-emerald-900 uppercase tracking-wider">
+                        <span className="font-semibold text-emerald-900 uppercase tracking-wide">
                           {verif.type === "student_id" ? "Student ID" : verif.type === "driving_license" ? "Driving License" : "Vehicle RC"}
                         </span>
-                        <span className="font-mono text-emerald-700">{verif.idNumber}</span>
+                        <span className="font-mono text-emerald-700 text-[10px]">{verif.idNumber}</span>
                       </div>
-                      <p className="text-xs text-gray-700 font-medium">{verif.documentTitle}</p>
-                      <p className="text-[10px] text-gray-500 font-mono truncate">{verif.minioKey}</p>
+                      <p className="text-[11px] text-gray-600">{verif.documentTitle}</p>
                     </div>
 
-                    <div className="flex items-center gap-2 pt-1">
+                    <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => setSelectedVerif(verif)}
-                        className="flex-1 py-2 px-3 rounded-xl border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                        className="flex-1 py-1.5 px-2.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-1.5 cursor-pointer"
                       >
-                        <Eye size={13} />
+                        <Eye size={12} />
                         <span>Inspect</span>
                       </button>
                       <button
                         onClick={() => handleRejectVerification(verif)}
-                        className="py-2 px-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 text-xs font-bold transition-colors cursor-pointer"
-                        title="Reject Document"
+                        className="py-1.5 px-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 text-xs font-semibold cursor-pointer"
                       >
-                        <X size={14} />
+                        <X size={13} />
                       </button>
                       <button
                         onClick={() => handleApproveVerification(verif)}
-                        className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-green-500 text-white hover:from-emerald-700 hover:to-green-600 text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                        className="flex-1 py-1.5 px-2.5 rounded-lg bg-emerald-700 text-white hover:bg-emerald-800 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer"
                       >
-                        <Check size={14} />
+                        <Check size={12} />
                         <span>Approve</span>
                       </button>
                     </div>
@@ -394,9 +367,9 @@ export default function AdminDashboardPage() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12">
-                <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
-                <h4 className="text-base font-bold text-gray-900">Verification Queue Clear</h4>
+              <div className="text-center py-10">
+                <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto mb-2" />
+                <h4 className="text-sm font-semibold text-gray-900">Verification Queue Clear</h4>
                 <p className="text-xs text-gray-500 mt-1 max-w-sm mx-auto">
                   All student IDs, driving licenses, and vehicle certificates have been reviewed.
                 </p>
@@ -405,50 +378,48 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-
-
-        {/* Tab 3: Recently Registered Users Table */}
+        {/* Tab: User Accounts */}
         {selectedTab === "users" && (
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-gray-50/70">
+              <TableHeader className="bg-gray-50/60">
                 <TableRow>
-                  <TableHead className="text-xs font-bold text-gray-700">User</TableHead>
-                  <TableHead className="text-xs font-bold text-gray-700">Role</TableHead>
-                  <TableHead className="text-xs font-bold text-gray-700">Campus & Year</TableHead>
-                  <TableHead className="text-xs font-bold text-gray-700">Verifications</TableHead>
-                  <TableHead className="text-xs font-bold text-gray-700">Account Status</TableHead>
-                  <TableHead className="text-xs font-bold text-gray-700 text-right">Moderation Action</TableHead>
+                  <TableHead className="text-[11px] font-semibold text-gray-500">User</TableHead>
+                  <TableHead className="text-[11px] font-semibold text-gray-500">Role</TableHead>
+                  <TableHead className="text-[11px] font-semibold text-gray-500 hidden md:table-cell">Campus & Year</TableHead>
+                  <TableHead className="text-[11px] font-semibold text-gray-500 hidden sm:table-cell">Verifications</TableHead>
+                  <TableHead className="text-[11px] font-semibold text-gray-500">Status</TableHead>
+                  <TableHead className="text-[11px] font-semibold text-gray-500 text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredUsers.map((u) => (
-                  <TableRow key={u.id} className="hover:bg-emerald-50/30">
+                  <TableRow key={u.id} className="hover:bg-emerald-50/20">
                     <TableCell>
                       <div className="flex items-center gap-2.5">
-                        <img src={u.avatar} alt="" className="w-8 h-8 rounded-full object-cover" />
-                        <div>
-                          <p className="text-xs font-bold text-gray-900">{u.name}</p>
-                          <p className="text-[11px] text-gray-500">{u.email}</p>
+                        <img src={u.avatar} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold text-gray-900 truncate">{u.name}</p>
+                          <p className="text-[11px] text-gray-500 truncate">{u.email}</p>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 capitalize">
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 capitalize">
                         {u.role.replace("_", " ")}
                       </span>
                     </TableCell>
-                    <TableCell className="text-xs text-gray-700">
-                      {u.campus} {u.collegeYear && `· ${u.collegeYear}`}
+                    <TableCell className="text-xs text-gray-600 hidden md:table-cell">
+                      {u.campus}{u.collegeYear && ` · ${u.collegeYear}`}
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1.5">
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
+                    <TableCell className="hidden sm:table-cell">
+                      <div className="flex items-center gap-1">
+                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
                           u.studentVerified ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-500"
                         }`}>
                           ID {u.studentVerified ? "✓" : "—"}
                         </span>
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
+                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
                           u.licenseVerified ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-500"
                         }`}>
                           DL {u.licenseVerified ? "✓" : "—"}
@@ -456,7 +427,7 @@ export default function AdminDashboardPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                         u.status === "active" ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"
                       }`}>
                         {u.status.toUpperCase()}
@@ -465,13 +436,13 @@ export default function AdminDashboardPage() {
                     <TableCell className="text-right">
                       <button
                         onClick={() => handleToggleUser(u)}
-                        className={`text-xs font-bold px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${
+                        className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${
                           u.status === "active"
                             ? "border-rose-200 text-rose-700 hover:bg-rose-50"
                             : "border-emerald-200 text-emerald-700 hover:bg-emerald-50"
                         }`}
                       >
-                        {u.status === "active" ? "Suspend Account" : "Activate Account"}
+                        {u.status === "active" ? "Suspend" : "Activate"}
                       </button>
                     </TableCell>
                   </TableRow>
@@ -481,62 +452,67 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* Tab 4: Complaints & Reports */}
+        {/* Tab: Reports & Complaints */}
         {selectedTab === "reports" && (
-          <div className="p-4 sm:p-6">
-            <div className="space-y-4">
-              {filteredReports.map((report) => (
-                <div
-                  key={report.id}
-                  className="p-5 rounded-2xl border border-gray-100 hover:border-emerald-200 bg-white flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all"
-                >
-                  <div className="space-y-1.5 max-w-2xl">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
-                        report.status === "open"
-                          ? "bg-rose-100 text-rose-800"
-                          : report.status === "in_investigation"
-                          ? "bg-amber-100 text-amber-800"
-                          : "bg-emerald-100 text-emerald-800"
-                      }`}>
-                        {report.status.replace("_", " ").toUpperCase()}
-                      </span>
-                      <span className="text-xs font-bold text-gray-900">{report.category}</span>
-                      <span className="text-xs text-gray-400">· {report.createdAt}</span>
-                    </div>
-                    <p className="text-xs sm:text-sm text-gray-700">{report.description}</p>
-                    <p className="text-xs text-gray-500">
-                      Filed by: <span className="font-semibold text-gray-900">{report.reporterName}</span> ({report.reporterRole}) · Target: {report.targetId}
-                    </p>
-                    {report.resolutionNotes && (
-                      <p className="text-xs text-emerald-700 bg-emerald-50 p-2 rounded-lg font-medium">
-                        Resolution: {report.resolutionNotes}
-                      </p>
-                    )}
+          <div className="divide-y divide-gray-50">
+            {filteredReports.map((report) => (
+              <div
+                key={report.id}
+                className="px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-4 hover:bg-gray-50/40 transition-colors"
+              >
+                <div className="flex-1 min-w-0 space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      report.status === "open"
+                        ? "bg-rose-100 text-rose-800"
+                        : report.status === "in_investigation"
+                        ? "bg-amber-100 text-amber-800"
+                        : "bg-emerald-100 text-emerald-800"
+                    }`}>
+                      {report.status.replace("_", " ").toUpperCase()}
+                    </span>
+                    <span className="text-xs font-semibold text-gray-900">{report.category}</span>
+                    <span className="text-[11px] text-gray-400">{report.createdAt}</span>
                   </div>
-
-                  {report.status !== "resolved" && (
-                    <button
-                      onClick={() => setSelectedReport(report)}
-                      className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 shadow-sm transition-all shrink-0 cursor-pointer"
-                    >
-                      Resolve Incident
-                    </button>
+                  <p className="text-xs text-gray-700 line-clamp-1">{report.description}</p>
+                  <p className="text-[11px] text-gray-500">
+                    Filed by: <span className="font-semibold text-gray-700">{report.reporterName}</span>
+                    {" "}({report.reporterRole}) · Target: {report.targetId}
+                  </p>
+                  {report.resolutionNotes && (
+                    <p className="text-[11px] text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg">
+                      Resolution: {report.resolutionNotes}
+                    </p>
                   )}
                 </div>
-              ))}
-            </div>
+
+                {report.status !== "resolved" && (
+                  <button
+                    onClick={() => setSelectedReport(report)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-emerald-700 hover:bg-emerald-800 shrink-0 cursor-pointer"
+                  >
+                    Resolve
+                  </button>
+                )}
+              </div>
+            ))}
+
+            {filteredReports.length === 0 && (
+              <div className="text-center py-10">
+                <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto mb-2" />
+                <p className="text-sm font-semibold text-gray-700">No reports found</p>
+              </div>
+            )}
           </div>
         )}
-
       </div>
 
       {/* Inspect Document Dialog */}
       {selectedVerif && (
         <Dialog open={!!selectedVerif} onOpenChange={() => setSelectedVerif(null)}>
-          <DialogContent className="max-w-md rounded-3xl bg-white p-6">
+          <DialogContent className="max-w-md rounded-2xl bg-white p-6">
             <DialogHeader>
-              <DialogTitle className="text-lg font-bold text-gray-900">
+              <DialogTitle className="text-base font-bold text-gray-900">
                 Document Inspection
               </DialogTitle>
               <DialogDescription className="text-xs text-gray-500">
@@ -545,26 +521,25 @@ export default function AdminDashboardPage() {
             </DialogHeader>
 
             <div className="space-y-4 my-2">
-              <div className="rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 max-h-64 flex items-center justify-center">
+              <div className="rounded-xl overflow-hidden border border-gray-200 bg-gray-50 max-h-64 flex items-center justify-center">
                 <img
                   src={selectedVerif.documentUrl}
                   alt={selectedVerif.documentTitle}
                   className="max-h-64 w-full object-cover"
                 />
               </div>
-
-              <div className="bg-emerald-50/70 p-3 rounded-xl border border-emerald-100 text-xs space-y-1">
+              <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-xs space-y-1.5">
                 <div className="flex justify-between">
-                  <span className="font-bold text-emerald-900">Document Type:</span>
+                  <span className="font-semibold text-gray-700">Document Type:</span>
                   <span className="capitalize">{selectedVerif.type.replace("_", " ")}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="font-bold text-emerald-900">ID / Certificate #:</span>
+                  <span className="font-semibold text-gray-700">ID / Certificate #:</span>
                   <span className="font-mono font-semibold">{selectedVerif.idNumber}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="font-bold text-emerald-900">MinIO Storage Key:</span>
-                  <span className="font-mono text-[10px] text-gray-600">{selectedVerif.minioKey}</span>
+                <div className="flex justify-between gap-4">
+                  <span className="font-semibold text-gray-700 shrink-0">MinIO Key:</span>
+                  <span className="font-mono text-[10px] text-gray-500 truncate">{selectedVerif.minioKey}</span>
                 </div>
               </div>
             </div>
@@ -575,7 +550,7 @@ export default function AdminDashboardPage() {
                   handleRejectVerification(selectedVerif);
                   setSelectedVerif(null);
                 }}
-                className="flex-1 py-2.5 px-4 rounded-xl border border-rose-200 text-rose-700 font-bold text-xs hover:bg-rose-50"
+                className="flex-1 py-2 px-4 rounded-lg border border-rose-200 text-rose-700 font-semibold text-xs hover:bg-rose-50"
               >
                 Reject Document
               </button>
@@ -584,7 +559,7 @@ export default function AdminDashboardPage() {
                   handleApproveVerification(selectedVerif);
                   setSelectedVerif(null);
                 }}
-                className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-700 text-white font-bold text-xs hover:bg-emerald-800"
+                className="flex-1 py-2 px-4 rounded-lg bg-emerald-700 text-white font-semibold text-xs hover:bg-emerald-800"
               >
                 Approve Document
               </button>
@@ -596,9 +571,9 @@ export default function AdminDashboardPage() {
       {/* Resolve Incident Dialog */}
       {selectedReport && (
         <Dialog open={!!selectedReport} onOpenChange={() => setSelectedReport(null)}>
-          <DialogContent className="max-w-md rounded-3xl bg-white p-6">
+          <DialogContent className="max-w-md rounded-2xl bg-white p-6">
             <DialogHeader>
-              <DialogTitle className="text-lg font-bold text-gray-900">
+              <DialogTitle className="text-base font-bold text-gray-900">
                 Resolve Incident Report
               </DialogTitle>
               <DialogDescription className="text-xs text-gray-500">
@@ -610,15 +585,12 @@ export default function AdminDashboardPage() {
               <p className="text-xs text-gray-600 bg-gray-50 p-3 rounded-xl border border-gray-100">
                 {selectedReport.description}
               </p>
-
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Resolution Notes
-                </label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Resolution Notes</label>
                 <textarea
                   value={resolutionNote}
                   onChange={(e) => setResolutionNote(e.target.value)}
-                  placeholder="Explain resolution steps (e.g., student credited, vehicle sent for brake inspection)..."
+                  placeholder="Explain resolution steps..."
                   rows={3}
                   className="w-full p-3 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-600"
                 />
@@ -628,13 +600,13 @@ export default function AdminDashboardPage() {
             <DialogFooter className="flex gap-2">
               <button
                 onClick={() => setSelectedReport(null)}
-                className="py-2.5 px-4 rounded-xl border border-gray-200 text-gray-600 font-bold text-xs"
+                className="py-2 px-4 rounded-lg border border-gray-200 text-gray-600 font-semibold text-xs"
               >
                 Cancel
               </button>
               <button
                 onClick={handleResolveReport}
-                className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 text-white font-bold text-xs hover:from-emerald-700 hover:to-green-700"
+                className="py-2 px-4 rounded-lg bg-emerald-700 text-white font-semibold text-xs hover:bg-emerald-800"
               >
                 Mark as Resolved
               </button>
