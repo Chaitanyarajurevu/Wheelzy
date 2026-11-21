@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   Users,
   Search,
@@ -65,21 +66,35 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans">
+      {/* Page Heading aligned with Renter & Owner Dashboards */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-gray-900 tracking-tight">User Directory &amp; Verification Dossiers</h1>
-          <p className="text-xs text-gray-500 mt-1">
-            Complete database of student renters, vehicle owners, and admins. Click any user to inspect their full profile, photos, and document proofs.
+          <div className="flex items-center gap-2 mb-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">
+              Identity &amp; Compliance Directory
+            </span>
+          </div>
+          <h1 className="text-xl font-bold text-gray-900">User Management</h1>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Complete database of student renters, vehicle owners, and platform administrators.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <Link
+            href="/admin/verification"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-800 transition-colors shadow-xs"
+          >
+            <ShieldCheck size={13} />
+            <span>Verification Center</span>
+          </Link>
+          <span className="text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">
             Total Users: {users.length}
           </span>
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         {/* Filters Bar */}
         <div className="p-4 sm:p-5 border-b border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="relative w-full sm:w-96">

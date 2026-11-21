@@ -25,6 +25,7 @@ import {
   Check,
 } from "lucide-react";
 import { dataStore, User, StoredVehicle, StoredBooking, VerificationRequest } from "@/lib/dataStore";
+import { formatCurrency } from "@/lib/currency";
 import { toast } from "sonner";
 
 interface AdminUserProfileModalProps {
@@ -712,7 +713,7 @@ export function AdminUserProfileModal({
                         </div>
                         <div className="flex items-center justify-between text-xs pt-1 border-t border-gray-200/60">
                           <span className="text-gray-500">Hourly Rate:</span>
-                          <span className="font-bold text-emerald-800">${v.hourlyPrice.toFixed(2)}/hr</span>
+                          <span className="font-bold text-emerald-800">{formatCurrency(v.hourlyPrice || 100)}/hr</span>
                         </div>
                       </div>
                     ))}
@@ -733,7 +734,7 @@ export function AdminUserProfileModal({
                             </div>
                           </div>
                           <div className="text-right">
-                            <span className="font-bold text-gray-900 block">${b.totalCost.toFixed(2)}</span>
+                            <span className="font-bold text-gray-900 block">{formatCurrency(b.totalCost)}</span>
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 uppercase">
                               {b.status}
                             </span>

@@ -3,6 +3,7 @@
 // Fixed platform rental rate: ₹100 per hour
 // ==========================================
 export const STANDARD_HOURLY_RATE = 100;
+export { formatCurrency, formatINR } from "./currency";
 
 export function calculateRentalAmount(durationHours: number): number {
   const billedHours = Math.max(1, Math.ceil(durationHours));
@@ -91,8 +92,15 @@ export interface User {
 export interface VehicleDocument {
   rcNumber: string;
   rcMinioKey?: string;
+  rcDocUrl?: string;
+  rcStatus?: "not_uploaded" | "pending" | "verified" | "rejected";
+  rcRejectionReason?: string;
+  insurancePolicyNumber?: string;
   insuranceExpiry: string;
   insuranceMinioKey?: string;
+  insuranceDocUrl?: string;
+  insuranceStatus?: "not_uploaded" | "pending" | "verified" | "rejected";
+  insuranceRejectionReason?: string;
   verified: boolean;
 }
 
@@ -301,11 +309,17 @@ const SEED_USERS: User[] = [
     collegeYear: "EECS '27",
     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
     phone: "+1 (510) 842-1200",
+    registrationNumber: "REG-2023-EECS-0482",
+    collegeName: "College of Engineering, UC Berkeley",
+    branchDepartment: "Electrical Eng & Computer Sciences",
+    academicYear: "4th Year (Class of 2027)",
+    section: "Section A",
     studentVerified: true,
     licenseVerified: true,
     aadhaarVerified: true,
     studentIdNumber: "SID-UCB-77102",
     studentIdCardUrl: "/student_id_proof.svg",
+    studentIdStatus: "verified",
     aadhaarNumber: "XXXX-XXXX-4410",
     aadhaarCardUrl: "/aadhaar_card_proof.svg",
     drivingLicenseNumber: "DL-CA-7710928",
@@ -541,7 +555,13 @@ const SEED_VEHICLES: StoredVehicle[] = [
     documents: {
       rcNumber: "CA-EBIKE-88192",
       rcMinioKey: "minio://wheelzy-docs/vehicles/rc_v1.pdf",
+      rcDocUrl: "/vehicle_rc_proof.svg",
+      rcStatus: "verified",
+      insurancePolicyNumber: "POL-WHEELZY-8819",
       insuranceExpiry: "2027-05-15",
+      insuranceMinioKey: "minio://wheelzy-docs/vehicles/ins_v1.pdf",
+      insuranceDocUrl: "/insurance_document_proof.svg",
+      insuranceStatus: "verified",
       verified: true,
     },
     createdDate: "2026-01-20",
@@ -1141,6 +1161,29 @@ const SEED_VERIFICATIONS: VerificationRequest[] = [
     rcNumber: "STF-MTR-9081",
     insuranceExpiry: "2027-11-05",
   },
+  {
+    id: "ver-3",
+    userId: "usr-david",
+    userName: "David Kim",
+    userEmail: "david.kim@berkeley.edu",
+    userAvatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+    userRole: "renter",
+    campus: "UC Berkeley",
+    type: "driving_license",
+    documentTitle: "Driver License (Class M2)",
+    idNumber: "DL-CA-9921402",
+    documentUrl: "/driving_license_proof.svg",
+    minioKey: "minio://wheelzy-docs/kyc/dl_david_2026.pdf",
+    status: "pending",
+    submittedAt: "25 mins ago",
+    notes: "Motorized two-wheeler transit license check",
+    drivingLicenseNumber: "DL-CA-9921402",
+    drivingLicenseUrl: "/driving_license_proof.svg",
+    studentIdNumber: "SID-UCB-99120",
+    studentIdUrl: "/student_id_proof.svg",
+    aadhaarNumber: "XXXX-XXXX-3341",
+    aadhaarUrl: "/aadhaar_card_proof.svg",
+  },
 ];
 
 const SEED_REPORTS: IncidentReport[] = [
@@ -1277,7 +1320,25 @@ function saveData<T>(key: string, data: T): void {
 export const dataStore = {
   // Users
   getUsers(): User[] {
-    return loadData<User[]>(STORAGE_KEYS.USERS, SEED_USERS);
+    const list = loadData<User[]>(STORAGE_KEYS.USERS, SEED_USERS);
+    return list.map((u) => {
+      const seed = SEED_USERS.find((s) => s.id === u.id);
+      if (seed) {
+        return {
+          ...seed,
+          ...u,
+          registrationNumber: u.registrationNumber || seed.registrationNumber,
+          collegeName: u.collegeName || seed.collegeName,
+          branchDepartment: u.branchDepartment || seed.branchDepartment,
+          academicYear: u.academicYear || seed.academicYear,
+          section: u.section || seed.section,
+          studentIdNumber: u.studentIdNumber || seed.studentIdNumber,
+          studentIdCardUrl: u.studentIdCardUrl || seed.studentIdCardUrl,
+          studentIdStatus: u.studentIdStatus || seed.studentIdStatus || (u.studentVerified ? "verified" : "pending"),
+        };
+      }
+      return u;
+    });
   },
   getUserById(id: string): User | undefined {
     return this.getUsers().find((u) => u.id === id);
@@ -1379,6 +1440,8 @@ export const dataStore = {
     }
     return onePerOwner.map((v) => {
       const rentalDurationHours = v.rentalDurationHours || getVehicleDurationHours(v);
+      const seed = SEED_VEHICLES.find((s) => s.id === v.id);
+      const seedDocs = seed?.documents;
       return {
         ...v,
         hourlyPrice: STANDARD_HOURLY_RATE,
@@ -1389,6 +1452,20 @@ export const dataStore = {
         returnTime: v.returnTime || "01:00 PM",
         availableFrom: v.availableFrom || "28 October 2026, 10:00 AM",
         mustReturnBy: v.mustReturnBy || "28 October 2026, 1:00 PM",
+        documents: {
+          rcNumber: v.documents?.rcNumber || seedDocs?.rcNumber || "CA-EBIKE-88192",
+          rcMinioKey: v.documents?.rcMinioKey || seedDocs?.rcMinioKey || "minio://wheelzy-docs/vehicles/rc_v1.pdf",
+          rcDocUrl: v.documents?.rcDocUrl || seedDocs?.rcDocUrl || "/vehicle_rc_proof.svg",
+          rcStatus: v.documents?.rcStatus || seedDocs?.rcStatus || "verified",
+          rcRejectionReason: v.documents?.rcRejectionReason || seedDocs?.rcRejectionReason,
+          insurancePolicyNumber: v.documents?.insurancePolicyNumber || seedDocs?.insurancePolicyNumber || "POL-WHEELZY-8819",
+          insuranceExpiry: v.documents?.insuranceExpiry || seedDocs?.insuranceExpiry || "2027-05-15",
+          insuranceMinioKey: v.documents?.insuranceMinioKey || seedDocs?.insuranceMinioKey || "minio://wheelzy-docs/vehicles/ins_v1.pdf",
+          insuranceDocUrl: v.documents?.insuranceDocUrl || seedDocs?.insuranceDocUrl || "/insurance_document_proof.svg",
+          insuranceStatus: v.documents?.insuranceStatus || seedDocs?.insuranceStatus || "verified",
+          insuranceRejectionReason: v.documents?.insuranceRejectionReason || seedDocs?.insuranceRejectionReason,
+          verified: v.documents?.verified ?? seedDocs?.verified ?? true,
+        },
       };
     });
   },
@@ -1525,6 +1602,31 @@ export const dataStore = {
     if (idx === -1) return undefined;
     vehicles[idx] = { ...vehicles[idx], ...updates };
     saveData(STORAGE_KEYS.VEHICLES, vehicles);
+    return vehicles[idx];
+  },
+  updateVehicleDocument(
+    vehicleId: string,
+    docUpdates: Partial<VehicleDocument>
+  ): StoredVehicle | undefined {
+    const vehicles = this.getVehicles();
+    const idx = vehicles.findIndex((v) => v.id === vehicleId);
+    if (idx === -1) return undefined;
+    const currentDocs = vehicles[idx].documents || {
+      rcNumber: `RC-${Date.now()}`,
+      insuranceExpiry: "2027-12-31",
+      verified: false,
+    };
+    vehicles[idx].documents = {
+      ...currentDocs,
+      ...docUpdates,
+    };
+    saveData(STORAGE_KEYS.VEHICLES, vehicles);
+    this.addAuditLog(
+      vehicles[idx].ownerName || "Owner",
+      "owner",
+      `VEHICLE_DOCUMENTS_UPDATED: ${Object.keys(docUpdates).join(", ")} for ${vehicles[idx].name}`,
+      vehicleId
+    );
     return vehicles[idx];
   },
   deleteVehicle(vehicleId: string): { success: boolean; error?: string } {
@@ -2081,36 +2183,117 @@ export const dataStore = {
     saveData(STORAGE_KEYS.VERIFICATIONS, verifs);
 
     if (verifs[idx].type === "vehicle_rc" && verifs[idx].targetVehicleId) {
-      // Vehicle is marked as approved, but remains inactive until owner explicitly activates with availability schedule
+      // Vehicle is marked as approved, but strictly remains inactive until owner explicitly activates with availability schedule
       this.updateVehicleStatus(
         verifs[idx].targetVehicleId!,
         status === "approved" ? "approved" : "rejected",
         false
       );
+      this.updateVehicleDocument(verifs[idx].targetVehicleId!, {
+        rcStatus: status === "approved" ? "verified" : "rejected",
+        insuranceStatus: status === "approved" ? "verified" : "rejected",
+        rcRejectionReason: status === "rejected" ? (notes || "RC / Insurance rejected by administrator.") : undefined,
+        verified: status === "approved",
+      });
     }
 
     const users = this.getUsers();
     const userIdx = users.findIndex((u) => u.id === verifs[idx].userId);
     if (userIdx !== -1) {
-      if (verifs[idx].type === "student_id" && status === "approved") {
-        users[userIdx].studentVerified = true;
+      if (verifs[idx].type === "student_id") {
+        users[userIdx].studentVerified = status === "approved";
+        users[userIdx].studentIdStatus = status === "approved" ? "verified" : "rejected";
+        if (status === "rejected" && notes) {
+          users[userIdx].studentIdRejectionReason = notes;
+        } else if (status === "approved") {
+          users[userIdx].studentIdRejectionReason = undefined;
+        }
       }
-      if (verifs[idx].type === "driving_license" && status === "approved") {
-        users[userIdx].licenseVerified = true;
+      if (verifs[idx].type === "driving_license") {
+        users[userIdx].licenseVerified = status === "approved";
       }
       saveData(STORAGE_KEYS.USERS, users);
     }
 
+    const targetRole = verifs[idx].userRole || (userIdx !== -1 ? users[userIdx].role : "renter");
+
     this.addNotification({
       recipientId: verifs[idx].userId,
-      recipientRole: "renter",
+      recipientRole: targetRole,
       title: `${verifs[idx].documentTitle} ${status.toUpperCase()}`,
-      message: `Your verification request has been ${status} by campus administration.`,
+      message: status === "approved"
+        ? `Your ${verifs[idx].documentTitle} has been verified and approved by campus administration.`
+        : `Your ${verifs[idx].documentTitle} was rejected by campus administration. Reason: ${notes || "Documentation unclear or expired."}`,
       type: "verification",
-      actionHref: "/renter/profile",
+      actionHref: targetRole === "owner" ? "/owner/profile" : "/renter/profile",
     });
 
+    this.addAuditLog(
+      "Admin",
+      "system_admin",
+      `VERIFICATION_REVIEWED: [${verifs[idx].type}] for ${verifs[idx].userName} -> ${status.toUpperCase()}`,
+      id
+    );
+
     return verifs[idx];
+  },
+
+  reviewVehicle(
+    vehicleId: string,
+    status: "approved" | "rejected" | "maintenance",
+    notes?: string
+  ): StoredVehicle | undefined {
+    const v = this.updateVehicleStatus(
+      vehicleId,
+      status === "approved" ? "approved" : status === "rejected" ? "rejected" : "maintenance",
+      false // strictly remains inactive until owner explicitly sets schedule!
+    );
+    if (!v) return undefined;
+
+    if (status === "approved") {
+      this.updateVehicleDocument(vehicleId, {
+        rcStatus: "verified",
+        insuranceStatus: "verified",
+        rcRejectionReason: undefined,
+        insuranceRejectionReason: undefined,
+        verified: true,
+      });
+    } else if (status === "rejected") {
+      this.updateVehicleDocument(vehicleId, {
+        rcStatus: "rejected",
+        rcRejectionReason: notes || "Vehicle registration / insurance rejected by campus administrator.",
+        verified: false,
+      });
+    }
+
+    // Also update any matching pending verification request
+    const verifs = this.getVerifications();
+    const vReq = verifs.find((vr) => vr.targetVehicleId === vehicleId && vr.status === "pending");
+    if (vReq) {
+      vReq.status = status === "approved" ? "approved" : "rejected";
+      vReq.notes = notes;
+      saveData(STORAGE_KEYS.VERIFICATIONS, verifs);
+    }
+
+    this.addNotification({
+      recipientId: v.ownerId,
+      recipientRole: "owner",
+      title: `Vehicle Registration ${status.toUpperCase()}`,
+      message: status === "approved"
+        ? `${v.name} has been approved by campus administration! Set your availability schedule in My Vehicle before listing.`
+        : `${v.name} registration status: ${status}. ${notes || ""}`,
+      type: "verification",
+      actionHref: "/owner/my-vehicles",
+    });
+
+    this.addAuditLog(
+      "Admin",
+      "system_admin",
+      `VEHICLE_REVIEWED: ${v.name} -> ${status.toUpperCase()}`,
+      vehicleId
+    );
+
+    return v;
   },
 
   // Incident Reports

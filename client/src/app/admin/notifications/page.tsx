@@ -37,15 +37,21 @@ export default function AdminNotificationsPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans">
       <div>
-        <h1 className="text-2xl font-black text-gray-900 tracking-tight">Platform Notifications</h1>
-        <p className="text-xs text-gray-500 mt-1">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">
+            Broadcast &amp; Alerts
+          </span>
+        </div>
+        <h1 className="text-xl font-bold text-gray-900">Platform Notifications</h1>
+        <p className="text-xs text-gray-500 mt-0.5">
           Broadcast campus safety alerts, maintenance announcements, and view administrative logs.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Compose Broadcast */}
-        <div className="lg:col-span-5 bg-white rounded-3xl border border-gray-100 p-6 shadow-sm space-y-4">
+        <div className="lg:col-span-5 bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
               <Megaphone size={16} />

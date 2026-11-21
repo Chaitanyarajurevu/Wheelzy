@@ -39,13 +39,19 @@ export default function AdminReportsPage() {
     <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-gray-900 tracking-tight">Reports & Complaints</h1>
-          <p className="text-xs text-gray-500 mt-1">
-            Resolve student incident reports, vehicle damage claims, and late return disputes.
+          <div className="flex items-center gap-2 mb-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">
+              Dispute Resolution &amp; Safety
+            </span>
+          </div>
+          <h1 className="text-xl font-bold text-gray-900">Reports &amp; Complaints</h1>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Resolve student incident reports, vehicle damage claims, and campus return disputes.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <span className="text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">
             Open Tickets: {reports.filter((r) => r.status !== "resolved").length}
           </span>
         </div>
@@ -55,7 +61,7 @@ export default function AdminReportsPage() {
         {reports.map((report) => (
           <div
             key={report.id}
-            className="p-5 sm:p-6 rounded-3xl bg-white border border-gray-100 hover:border-emerald-200 shadow-sm transition-all flex flex-col md:flex-row md:items-center justify-between gap-5"
+            className="p-5 rounded-2xl bg-white border border-gray-100 hover:border-emerald-200 shadow-sm transition-all flex flex-col md:flex-row md:items-center justify-between gap-5"
           >
             <div className="space-y-2 max-w-2xl">
               <div className="flex flex-wrap items-center gap-2">

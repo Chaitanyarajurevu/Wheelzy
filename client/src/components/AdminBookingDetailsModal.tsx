@@ -40,6 +40,7 @@ import {
   StoredVehicle,
   IncidentReport,
 } from "@/lib/dataStore";
+import { formatCurrency } from "@/lib/currency";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
@@ -236,7 +237,7 @@ export default function AdminBookingDetailsModal({
             <div className="flex items-center gap-6 self-start lg:self-center">
               <div className="text-right bg-white/5 border border-white/10 px-5 py-3 rounded-2xl">
                 <p className="text-[11px] font-bold text-emerald-300 uppercase tracking-wider">Total Quoted Quote</p>
-                <p className="text-3xl font-black text-white">${booking.totalCost.toFixed(2)}</p>
+                <p className="text-3xl font-black text-white">{formatCurrency(booking.totalCost)}</p>
               </div>
 
               <button
@@ -604,7 +605,7 @@ export default function AdminBookingDetailsModal({
                 <div className="p-5 rounded-3xl bg-white border border-gray-200/90 shadow-sm space-y-2 text-xs">
                   <p className="text-[10px] font-bold text-gray-400 uppercase">Trip Window</p>
                   <p className="font-bold text-gray-900">{booking.pickupTime} – {booking.dropoffTime}</p>
-                  <p className="text-gray-500">Duration: {booking.durationHours} hrs @ ${booking.hourlyRate}/hr</p>
+                  <p className="text-gray-500">Duration: {booking.durationHours} hrs @ {formatCurrency(booking.hourlyRate || 100)}/hr</p>
                   <p className="text-emerald-700 font-semibold truncate">Hub: {booking.campusHub}</p>
                 </div>
 
@@ -613,10 +614,10 @@ export default function AdminBookingDetailsModal({
                   <p className="text-[10px] font-bold text-emerald-300 uppercase">Pricing Calculation</p>
                   <div className="flex items-baseline justify-between">
                     <span className="text-xs text-emerald-100">Quoted Total:</span>
-                    <span className="text-2xl font-black text-white">${booking.totalCost.toFixed(2)}</span>
+                    <span className="text-2xl font-black text-white">{formatCurrency(booking.totalCost)}</span>
                   </div>
                   <p className="text-[10px] text-emerald-200/80 leading-tight">
-                    Includes ${booking.platformFee ?? 2.0} platform fee & ${booking.depositAmount ?? 15.0} deposit.
+                    Fixed {formatCurrency(booking.hourlyRate || 100)}/hr campus rate · Zero deposit required.
                   </p>
                 </div>
               </div>
@@ -726,31 +727,31 @@ export default function AdminBookingDetailsModal({
                   <div className="p-4 rounded-2xl bg-gray-50/70 border border-gray-100 space-y-1">
                     <p className="text-[11px] font-bold text-gray-500 uppercase">Hourly Rental Amount</p>
                     <p className="text-xl font-black text-gray-900">
-                      ${(booking.hourlyRate * booking.durationHours).toFixed(2)}
+                      {formatCurrency((booking.hourlyRate || 100) * booking.durationHours)}
                     </p>
-                    <p className="text-xs text-gray-500">{booking.durationHours} hrs @ ${booking.hourlyRate.toFixed(2)}/hr</p>
+                    <p className="text-xs text-gray-500">{booking.durationHours} hrs @ {formatCurrency(booking.hourlyRate || 100)}/hr</p>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-gray-50/70 border border-gray-100 space-y-1">
                     <p className="text-[11px] font-bold text-gray-500 uppercase">Platform Fee</p>
                     <p className="text-xl font-black text-gray-900">
-                      ${(booking.platformFee ?? 2.0).toFixed(2)}
+                      {formatCurrency(booking.platformFee ?? 0)}
                     </p>
-                    <p className="text-xs text-gray-500">Campus hub operations fee</p>
+                    <p className="text-xs text-gray-500">Campus peer operations</p>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-gray-50/70 border border-gray-100 space-y-1">
                     <p className="text-[11px] font-bold text-gray-500 uppercase">Security Deposit</p>
                     <p className="text-xl font-black text-gray-900">
-                      ${(booking.depositAmount ?? 15.0).toFixed(2)}
+                      {formatCurrency(booking.depositAmount ?? 0)}
                     </p>
-                    <p className="text-xs text-emerald-600 font-semibold">Refundable upon return inspection</p>
+                    <p className="text-xs text-emerald-600 font-semibold">Zero deposit required</p>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200 space-y-1">
                     <p className="text-[11px] font-bold text-emerald-800 uppercase">Total Quoted Amount</p>
                     <p className="text-2xl font-black text-emerald-900">
-                      ${booking.totalCost.toFixed(2)}
+                      {formatCurrency(booking.totalCost)}
                     </p>
                     <p className="text-xs text-emerald-700">Calculated platform quote</p>
                   </div>
@@ -1272,7 +1273,7 @@ export default function AdminBookingDetailsModal({
 
                   <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100 space-y-1">
                     <p className="text-[11px] font-bold text-gray-400 uppercase">Hourly Listing Rate</p>
-                    <p className="text-xs font-bold text-gray-900">${booking.hourlyRate.toFixed(2)} / hr</p>
+                    <p className="text-xs font-bold text-gray-900">{formatCurrency(booking.hourlyRate || 100)} / hr</p>
                     <p className="text-[11px] text-gray-500">Host established tariff</p>
                   </div>
                 </div>

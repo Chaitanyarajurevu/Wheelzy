@@ -37,13 +37,11 @@ export interface NavItem {
 export const roleNav: Record<Role, NavItem[]> = {
   system_admin: [
     { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+    { label: "Verification", href: "/admin/verification", icon: ShieldCheck, badge: "Pending" },
     { label: "User Management", href: "/admin/users", icon: Users },
-    { label: "Student Verification", href: "/admin/student-verification", icon: GraduationCap, badge: "Pending" },
-    { label: "Driving License Verification", href: "/admin/license-verification", icon: FileCheck },
-    { label: "Vehicle Verification", href: "/admin/vehicle-verification", icon: Car },
-    { label: "Vehicle Management", href: "/admin/vehicles", icon: CalendarClock },
+    { label: "Vehicle Management", href: "/admin/vehicles", icon: Car },
     { label: "Recent Bookings", href: "/admin/recent-bookings", icon: Activity, badge: "Recent" },
-    { label: "All Bookings / Booking History", href: "/admin/bookings", icon: BookOpen },
+    { label: "All Bookings", href: "/admin/bookings", icon: BookOpen },
     { label: "Reports & Complaints", href: "/admin/reports", icon: AlertTriangle },
     { label: "Notifications", href: "/admin/notifications", icon: Bell },
     { label: "Audit Logs", href: "/admin/audit-logs", icon: ScrollText },

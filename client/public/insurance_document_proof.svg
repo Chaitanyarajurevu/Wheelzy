@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 480" width="100%" height="100%">
+  <defs>
+    <linearGradient id="insBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F8FAFC" />
+      <stop offset="50%" stop-color="#F0FDF4" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="#F1F5F9" />
+    </linearGradient>
+    <linearGradient id="insHeader" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0F172A" />
+      <stop offset="50%" stop-color="#064E3B" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+    <filter id="insShadow" x="-5%" y="-5%" width="110%" height="115%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#0F172A" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <rect width="680" height="460" x="10" y="10" rx="20" fill="url(#insBg)" stroke="#CBD5E1" stroke-width="2" filter="url(#insShadow)"/>
+
+  <!-- Top Header -->
+  <path d="M 10 30 Q 10 10 30 10 L 670 10 Q 690 10 690 30 L 690 95 L 10 95 Z" fill="url(#insHeader)"/>
+
+  <!-- Shield Icon -->
+  <g transform="translate(30, 20)">
+    <circle cx="28" cy="28" r="26" fill="#F8FAFC" opacity="0.15" />
+    <path d="M 28 14 L 42 20 L 42 32 Q 42 42 28 46 Q 14 42 14 32 L 14 20 Z" fill="#34D399" opacity="0.9" />
+  </g>
+
+  <!-- Title & Subtitle -->
+  <text x="95" y="44" font-family="system-ui, sans-serif" font-size="18" font-weight="900" fill="#FFFFFF" letter-spacing="1">NATIONAL VEHICLE GENERAL INSURANCE</text>
+  <text x="95" y="68" font-family="system-ui, sans-serif" font-size="12" font-weight="800" fill="#A7F3D0" letter-spacing="2">CERTIFICATE OF MOTOR INSURANCE &amp; LIABILITY COVERAGE</text>
+
+  <rect x="490" y="22" width="175" height="50" rx="12" fill="#022C22" stroke="#34D399" stroke-width="1.5" />
+  <text x="577" y="42" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#A7F3D0" text-anchor="middle">POLICY NUMBER</text>
+  <text x="577" y="60" font-family="monospace" font-size="14" font-weight="900" fill="#FDE047" text-anchor="middle">POL-WHEELZY-8819</text>
+
+  <!-- Watermark Background -->
+  <text x="350" y="270" font-family="system-ui, sans-serif" font-size="70" font-weight="900" fill="#047857" opacity="0.04" text-anchor="middle" transform="rotate(-15 350 270)">INSURANCE ACTIVE</text>
+
+  <!-- Grid Row 1: Vehicle & Policyholder -->
+  <g transform="translate(35, 115)">
+    <rect width="630" height="60" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1" />
+    <text x="20" y="24" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#64748B">INSURED VEHICLE MAKE &amp; MODEL</text>
+    <text x="20" y="46" font-family="system-ui, sans-serif" font-size="15" font-weight="900" fill="#0F172A">Xiaomi Mi Electric Pro 2 (Fleet Reg: CA-EBIKE-88192)</text>
+
+    <text x="420" y="24" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#64748B">POLICY TYPE</text>
+    <text x="420" y="46" font-family="system-ui, sans-serif" font-size="13" font-weight="800" fill="#047857">COMPREHENSIVE + 3RD PARTY</text>
+  </g>
+
+  <!-- Grid Row 2: Owner & Coverage Period -->
+  <g transform="translate(35, 190)">
+    <rect width="630" height="75" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1" />
+    <text x="20" y="22" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#64748B">POLICY HOLDER (VEHICLE OWNER)</text>
+    <text x="20" y="44" font-family="system-ui, sans-serif" font-size="15" font-weight="900" fill="#0F172A">Marcus Vance</text>
+    <text x="20" y="62" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#64748B">Phone: +1 (510) 842-1200 · Student Host Verified</text>
+
+    <text x="420" y="22" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#64748B">VALIDITY PERIOD</text>
+    <text x="420" y="44" font-family="monospace" font-size="14" font-weight="800" fill="#047857">EXP: 2027-05-15</text>
+    <text x="420" y="62" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#16A34A">POLICY IN GOOD STANDING</text>
+  </g>
+
+  <!-- Grid Row 3: Coverage Details & Limits -->
+  <g transform="translate(35, 280)">
+    <rect width="630" height="75" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1" />
+    <text x="20" y="22" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#64748B">CAMPUS RENTAL ENDORSEMENT</text>
+    <text x="20" y="44" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#0F172A">Wheelzy Campus Peer-to-Peer Transit Rider</text>
+    <text x="20" y="62" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#64748B">Deductible: ₹0 on student standard accident tier</text>
+
+    <text x="420" y="22" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#64748B">INSURER ID &amp; SEAL</text>
+    <text x="420" y="44" font-family="system-ui, sans-serif" font-size="12" font-weight="700" fill="#0F172A">National General IRDAI/2026/WZY</text>
+    <text x="420" y="62" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#059669">DIGITALLY VERIFIED</text>
+  </g>
+
+  <!-- Official Stamp -->
+  <g transform="translate(520, 375)">
+    <circle cx="45" cy="45" r="40" fill="none" stroke="#047857" stroke-width="2.5" stroke-dasharray="4,2" />
+    <text x="45" y="38" font-family="system-ui, sans-serif" font-size="9" font-weight="900" fill="#047857" text-anchor="middle">VERIFIED</text>
+    <text x="45" y="52" font-family="system-ui, sans-serif" font-size="8" font-weight="800" fill="#047857" text-anchor="middle">INSURANCE</text>
+    <text x="45" y="64" font-family="monospace" font-size="7" font-weight="700" fill="#065F46" text-anchor="middle">WHEELZY SECURE</text>
+  </g>
+
+  <!-- Footer Disclaimer -->
+  <text x="35" y="430" font-family="system-ui, sans-serif" font-size="10" font-weight="500" fill="#64748B">This electronic Certificate of Insurance is valid under the Motor Vehicles Act and certified for campus micro-mobility usage.</text>
+</svg>
+

@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { Settings, Shield, Sliders, MapPin, DollarSign, Bell, Save } from "lucide-react";
+import { Settings, Shield, Sliders, MapPin, IndianRupee, Bell, Save } from "lucide-react";
 import { toast } from "sonner";
 
 export default function AdminSettingsPage() {
   const [eduMandatory, setEduMandatory] = useState(true);
   const [dlMandatory, setDlMandatory] = useState(true);
   const [platformCommission, setPlatformCommission] = useState("10");
-  const [insuranceFee, setInsuranceFee] = useState("2.00");
+  const [insuranceFee, setInsuranceFee] = useState("0");
   const [emergencyPhone, setEmergencyPhone] = useState("+1 (510) 555-CAMPUS");
 
   const handleSave = (e: React.FormEvent) => {
@@ -19,15 +19,21 @@ export default function AdminSettingsPage() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-12 font-sans">
       <div>
-        <h1 className="text-2xl font-black text-gray-900 tracking-tight">Platform Settings</h1>
-        <p className="text-xs text-gray-500 mt-1">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">
+            Configuration &amp; Guardrails
+          </span>
+        </div>
+        <h1 className="text-xl font-bold text-gray-900">Platform Settings</h1>
+        <p className="text-xs text-gray-500 mt-0.5">
           Configure verification enforcement, peer commission rates, and campus security parameters.
         </p>
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* Verification Policy Card */}
-        <div className="bg-white rounded-3xl border border-gray-100 p-6 sm:p-7 shadow-sm space-y-4">
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
           <div className="flex items-center gap-2.5 pb-2 border-b border-gray-100">
             <Shield className="w-5 h-5 text-emerald-600" />
             <h2 className="text-sm font-bold text-gray-900">Verification & Safety Policy</h2>
@@ -63,10 +69,10 @@ export default function AdminSettingsPage() {
         </div>
 
         {/* Economic & Fee Configuration */}
-        <div className="bg-white rounded-3xl border border-gray-100 p-6 sm:p-7 shadow-sm space-y-4">
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
           <div className="flex items-center gap-2.5 pb-2 border-b border-gray-100">
-            <DollarSign className="w-5 h-5 text-emerald-600" />
-            <h2 className="text-sm font-bold text-gray-900">Platform Fees & Insurance Rates</h2>
+            <IndianRupee className="w-5 h-5 text-emerald-600" />
+            <h2 className="text-sm font-bold text-gray-900">Platform Fees &amp; Insurance Rates</h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -82,7 +88,7 @@ export default function AdminSettingsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1">Campus Ride Insurance Per Booking ($)</label>
+              <label className="block text-xs font-bold text-gray-700 mb-1">Campus Ride Insurance Per Booking (₹)</label>
               <input
                 type="text"
                 value={insuranceFee}
@@ -95,10 +101,10 @@ export default function AdminSettingsPage() {
         </div>
 
         {/* Emergency Assistance */}
-        <div className="bg-white rounded-3xl border border-gray-100 p-6 sm:p-7 shadow-sm space-y-4">
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
           <div className="flex items-center gap-2.5 pb-2 border-b border-gray-100">
             <Bell className="w-5 h-5 text-emerald-600" />
-            <h2 className="text-sm font-bold text-gray-900">Emergency & Campus Helpline</h2>
+            <h2 className="text-sm font-bold text-gray-900">Emergency &amp; Campus Helpline</h2>
           </div>
 
           <div>
@@ -115,7 +121,7 @@ export default function AdminSettingsPage() {
 
         <button
           type="submit"
-          className="px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 text-white font-bold text-xs hover:from-emerald-700 hover:to-green-700 shadow-md flex items-center gap-2 cursor-pointer"
+          className="px-5 py-2.5 rounded-xl bg-emerald-700 text-white font-semibold text-xs hover:bg-emerald-800 shadow-sm flex items-center gap-2 cursor-pointer transition-colors"
         >
           <Save size={14} />
           <span>Save Changes</span>

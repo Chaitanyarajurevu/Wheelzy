@@ -25,6 +25,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { dataStore, StoredBooking } from "@/lib/dataStore";
+import { formatCurrency } from "@/lib/currency";
 import {
   Table,
   TableHeader,
@@ -145,44 +146,45 @@ export default function AdminAllBookingsPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16 font-sans">
 
-      {/* Page Header */}
+      {/* Page Header aligned with Renter & Owner Dashboards */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
-              All Bookings / Booking History
-            </h1>
-            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-              Permanent Ledger
+          <div className="flex items-center gap-2 mb-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">
+              Permanent Ledger &amp; Auditing
             </span>
           </div>
-          <p className="text-xs text-gray-500 mt-1 max-w-3xl">
-            Complete historical and active record of peer-to-peer quad rentals. Past bookings are permanently retained across status transitions for compliance, safety audits, and dispute resolution.
+          <h1 className="text-xl font-bold text-gray-900">
+            All Bookings &amp; Rental History
+          </h1>
+          <p className="text-xs text-gray-500 mt-0.5 max-w-2xl">
+            Complete historical and active record of peer-to-peer campus rentals. Past bookings are permanently retained for compliance, safety audits, and dispute resolution.
           </p>
         </div>
 
         {/* Quick Metric Chips */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-white text-gray-800 border border-gray-200 shadow-2xs">
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-white text-gray-800 border border-gray-200 shadow-2xs">
             Total: <strong>{counts.total}</strong>
           </span>
-          <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
             Active: <strong>{counts.active}</strong>
           </span>
-          <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-teal-50 text-teal-800 border border-teal-200 shadow-2xs">
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-teal-50 text-teal-800 border border-teal-200 shadow-2xs">
             Returned: <strong>{counts.returned}</strong>
           </span>
-          <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs">
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs">
             Cancelled: <strong>{counts.cancelled}</strong>
           </span>
-          <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 shadow-2xs">
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-rose-50 text-rose-800 border border-rose-200 shadow-2xs">
             Rejected: <strong>{counts.rejected}</strong>
           </span>
         </div>
       </div>
 
       {/* Main Container Card */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
 
         {/* Filter and Search Bar */}
         <div className="p-4 sm:p-5 border-b border-gray-100 bg-gray-50/50 space-y-3">
@@ -259,7 +261,7 @@ export default function AdminAllBookingsPage() {
                   <option value="date_desc">Booking Date: Newest First</option>
                   <option value="date_asc">Booking Date: Oldest First</option>
                   <option value="status">Status (A to Z)</option>
-                  <option value="cost_desc">Quoted Cost: High to Low</option>
+                  <option value="cost_desc">Quoted Cost (₹): High to Low</option>
                 </select>
               </div>
 
@@ -293,8 +295,8 @@ export default function AdminAllBookingsPage() {
                   <TableHead className="text-xs font-bold text-gray-700">Vehicle Info</TableHead>
                   <TableHead className="text-xs font-bold text-gray-700">Renter Details</TableHead>
                   <TableHead className="text-xs font-bold text-gray-700">Host Owner</TableHead>
-                  <TableHead className="text-xs font-bold text-gray-700">Schedule & Hub</TableHead>
-                  <TableHead className="text-xs font-bold text-gray-700">Quote</TableHead>
+                  <TableHead className="text-xs font-bold text-gray-700">Schedule &amp; Hub</TableHead>
+                  <TableHead className="text-xs font-bold text-gray-700">Total Quote (₹)</TableHead>
                   <TableHead className="text-xs font-bold text-gray-700">Return Photo</TableHead>
                   <TableHead className="text-xs font-bold text-gray-700">Status</TableHead>
                   <TableHead className="text-xs font-bold text-gray-700 text-right pr-6">Action</TableHead>
@@ -389,7 +391,7 @@ export default function AdminAllBookingsPage() {
 
                       {/* Total Quote */}
                       <TableCell>
-                        <span className="text-xs font-black text-gray-900">${b.totalCost.toFixed(2)}</span>
+                        <span className="text-xs font-black text-gray-900">{formatCurrency(b.totalCost)}</span>
                       </TableCell>
 
                       {/* Return Photo & Timestamp */}

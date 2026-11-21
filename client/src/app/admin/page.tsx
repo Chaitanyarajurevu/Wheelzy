@@ -128,29 +128,35 @@ export default function AdminDashboardPage() {
     <div className="max-w-7xl mx-auto pb-12 space-y-6 font-sans">
 
       {/* Page Heading */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-lg font-bold text-gray-900">Platform Overview</h1>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">
+              Campus Security &amp; Operations
+            </span>
+          </div>
+          <h1 className="text-xl font-bold text-gray-900">Platform Overview</h1>
           <p className="text-xs text-gray-500 mt-0.5">
-            Monitor users, vehicles and platform operations.
+            Monitor users, vehicles, rental activity, and compliance operations.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Link
-            href="/admin/student-verification"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-800 transition-colors"
+            href="/admin/verification"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-800 transition-colors shadow-xs"
           >
-            <GraduationCap size={13} />
-            <span>Verify Students</span>
-            {stats.pendingStudentVerifications > 0 && (
+            <ShieldCheck size={13} />
+            <span>Verification Center</span>
+            {verifications.filter((v) => v.status === "pending").length > 0 && (
               <span className="bg-white text-emerald-800 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                {stats.pendingStudentVerifications}
+                {verifications.filter((v) => v.status === "pending").length}
               </span>
             )}
           </Link>
           <Link
             href="/admin/vehicles"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 text-gray-600 text-xs font-semibold hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 text-gray-600 text-xs font-semibold hover:bg-gray-50 transition-colors shadow-2xs"
           >
             <Car size={13} />
             <span className="hidden sm:inline">Manage Vehicles</span>
@@ -310,62 +316,78 @@ export default function AdminDashboardPage() {
         {selectedTab === "verifications" && (
           <div className="p-4">
             {pendingVerifications.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {pendingVerifications.map((verif) => (
-                  <div
-                    key={verif.id}
-                    className="p-4 rounded-xl border border-gray-100 hover:border-emerald-200 bg-gray-50/40 hover:bg-white transition-all space-y-3"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2.5">
-                        <img
-                          src={verif.userAvatar}
-                          alt={verif.userName}
-                          className="w-9 h-9 rounded-full object-cover ring-2 ring-emerald-100 shrink-0"
-                        />
-                        <div className="min-w-0">
-                          <p className="text-xs font-semibold text-gray-900 truncate">{verif.userName}</p>
-                          <p className="text-[10px] text-gray-500 truncate">{verif.campus}</p>
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {pendingVerifications.map((verif) => (
+                    <div
+                      key={verif.id}
+                      className="p-4 rounded-xl border border-gray-100 hover:border-emerald-200 bg-gray-50/40 hover:bg-white transition-all space-y-3"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5">
+                          <img
+                            src={verif.userAvatar}
+                            alt={verif.userName}
+                            className="w-9 h-9 rounded-full object-cover ring-2 ring-emerald-100 shrink-0"
+                          />
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold text-gray-900 truncate">{verif.userName}</p>
+                            <p className="text-[10px] text-gray-500 truncate">{verif.campus}</p>
+                          </div>
                         </div>
+                        <span className="text-[10px] font-medium text-gray-400 shrink-0">{verif.submittedAt}</span>
                       </div>
-                      <span className="text-[10px] font-medium text-gray-400 shrink-0">{verif.submittedAt}</span>
-                    </div>
 
-                    <div className="bg-white rounded-lg p-2.5 border border-gray-200 space-y-1">
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className="font-semibold text-emerald-900 uppercase tracking-wide">
-                          {verif.type === "student_id" ? "Student ID" : verif.type === "driving_license" ? "Driving License" : "Vehicle RC"}
-                        </span>
-                        <span className="font-mono text-emerald-700 text-[10px]">{verif.idNumber}</span>
+                      <div className="bg-white rounded-lg p-2.5 border border-gray-200 space-y-1">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="font-semibold text-emerald-900 uppercase tracking-wide">
+                            {verif.type === "student_id" ? "Student ID" : verif.type === "driving_license" ? "Driving License" : "Vehicle RC"}
+                          </span>
+                          <span className="font-mono text-emerald-700 text-[10px]">{verif.idNumber}</span>
+                        </div>
+                        <p className="text-[11px] text-gray-600">{verif.documentTitle}</p>
                       </div>
-                      <p className="text-[11px] text-gray-600">{verif.documentTitle}</p>
-                    </div>
 
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={() => setSelectedVerif(verif)}
-                        className="flex-1 py-1.5 px-2.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-1.5 cursor-pointer"
-                      >
-                        <Eye size={12} />
-                        <span>Inspect</span>
-                      </button>
-                      <button
-                        onClick={() => handleRejectVerification(verif)}
-                        className="py-1.5 px-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 text-xs font-semibold cursor-pointer"
-                      >
-                        <X size={13} />
-                      </button>
-                      <button
-                        onClick={() => handleApproveVerification(verif)}
-                        className="flex-1 py-1.5 px-2.5 rounded-lg bg-emerald-700 text-white hover:bg-emerald-800 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer"
-                      >
-                        <Check size={12} />
-                        <span>Approve</span>
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => setSelectedVerif(verif)}
+                          className="flex-1 py-1.5 px-2.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <Eye size={12} />
+                          <span>Inspect</span>
+                        </button>
+                        <button
+                          onClick={() => handleRejectVerification(verif)}
+                          className="py-1.5 px-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 text-xs font-semibold cursor-pointer"
+                          title="Reject"
+                        >
+                          <X size={13} />
+                        </button>
+                        <button
+                          onClick={() => handleApproveVerification(verif)}
+                          className="flex-1 py-1.5 px-2.5 rounded-lg bg-emerald-700 text-white hover:bg-emerald-800 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <Check size={12} />
+                          <span>Approve</span>
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+                  <span className="text-xs text-gray-500">
+                    Showing {pendingVerifications.length} pending review requests
+                  </span>
+                  <Link
+                    href="/admin/verification"
+                    className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 hover:underline"
+                  >
+                    <span>Open Full Verification Center</span>
+                    <ChevronRight size={13} />
+                  </Link>
+                </div>
+              </>
             ) : (
               <div className="text-center py-10">
                 <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto mb-2" />
@@ -544,13 +566,21 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-            <DialogFooter className="flex gap-2">
+            <DialogFooter className="flex flex-col sm:flex-row gap-2">
+              <Link
+                href={`/admin/verification?tab=${selectedVerif.type === "student_id" ? "student" : selectedVerif.type === "driving_license" ? "license" : "vehicle"}`}
+                onClick={() => setSelectedVerif(null)}
+                className="py-2 px-3 rounded-lg border border-gray-200 text-gray-700 font-semibold text-xs hover:bg-gray-50 flex items-center justify-center gap-1.5"
+              >
+                <span>Full Dossier</span>
+                <ChevronRight size={13} />
+              </Link>
               <button
                 onClick={() => {
                   handleRejectVerification(selectedVerif);
                   setSelectedVerif(null);
                 }}
-                className="flex-1 py-2 px-4 rounded-lg border border-rose-200 text-rose-700 font-semibold text-xs hover:bg-rose-50"
+                className="flex-1 py-2 px-3 rounded-lg border border-rose-200 text-rose-700 font-semibold text-xs hover:bg-rose-50 cursor-pointer"
               >
                 Reject Document
               </button>
@@ -559,7 +589,7 @@ export default function AdminDashboardPage() {
                   handleApproveVerification(selectedVerif);
                   setSelectedVerif(null);
                 }}
-                className="flex-1 py-2 px-4 rounded-lg bg-emerald-700 text-white font-semibold text-xs hover:bg-emerald-800"
+                className="flex-1 py-2 px-3 rounded-lg bg-emerald-700 text-white font-semibold text-xs hover:bg-emerald-800 cursor-pointer"
               >
                 Approve Document
               </button>

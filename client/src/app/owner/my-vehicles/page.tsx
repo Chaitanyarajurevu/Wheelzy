@@ -28,6 +28,8 @@ import {
   ArrowRight,
   FileText,
   BadgeCheck,
+  Upload,
+  FileCheck2,
 } from "lucide-react";
 import {
   dataStore,
@@ -367,6 +369,150 @@ function MyVehiclesContent() {
   // MODAL 4: VEHICLE DETAILS MODAL
   // ----------------------------------------------------
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+
+  // ----------------------------------------------------
+  // VEHICLE DOCUMENTS STATE (RC & INSURANCE)
+  // ----------------------------------------------------
+  const rcFileInputRef = React.useRef<HTMLInputElement>(null);
+  const insuranceFileInputRef = React.useRef<HTMLInputElement>(null);
+  const [rcUploadProgress, setRcUploadProgress] = useState<number | null>(null);
+  const [insuranceUploadProgress, setInsuranceUploadProgress] = useState<number | null>(null);
+  const [docPreviewModalOpen, setDocPreviewModalOpen] = useState(false);
+  const [docPreviewTitle, setDocPreviewTitle] = useState("");
+  const [docPreviewUrl, setDocPreviewUrl] = useState("");
+
+  const openDocPreview = (title: string, url: string) => {
+    setDocPreviewTitle(title);
+    setDocPreviewUrl(url);
+    setDocPreviewModalOpen(true);
+  };
+
+  const handleRcFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !vehicle) return;
+
+    const validTypes = ["image/jpeg", "image/png", "image/jpg", "application/pdf"];
+    if (!validTypes.includes(file.type)) {
+      toast.error("Please upload a valid JPG, PNG, or PDF file for RC verification.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File size exceeds 5MB. Please upload a smaller document.");
+      return;
+    }
+
+    setRcUploadProgress(20);
+    const progressTimer = setInterval(() => {
+      setRcUploadProgress((prev) => {
+        if (prev === null || prev >= 90) {
+          clearInterval(progressTimer);
+          return 90;
+        }
+        return prev + 30;
+      });
+    }, 150);
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const resultUrl = reader.result as string;
+      setTimeout(() => {
+        clearInterval(progressTimer);
+        setRcUploadProgress(100);
+        setTimeout(() => {
+          dataStore.updateVehicleDocument(vehicle.id, {
+            rcDocUrl: resultUrl,
+            rcStatus: "pending",
+            rcRejectionReason: undefined,
+            rcMinioKey: `minio://wheelzy-docs/vehicles/rc_${Date.now()}.pdf`,
+          });
+          setRcUploadProgress(null);
+          reloadData();
+          toast.success("Registration Certificate (RC) uploaded! Submitted for administrative verification.");
+        }, 300);
+      }, 500);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleInsuranceFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !vehicle) return;
+
+    const validTypes = ["image/jpeg", "image/png", "image/jpg", "application/pdf"];
+    if (!validTypes.includes(file.type)) {
+      toast.error("Please upload a valid JPG, PNG, or PDF file for Insurance verification.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File size exceeds 5MB. Please upload a smaller document.");
+      return;
+    }
+
+    setInsuranceUploadProgress(20);
+    const progressTimer = setInterval(() => {
+      setInsuranceUploadProgress((prev) => {
+        if (prev === null || prev >= 90) {
+          clearInterval(progressTimer);
+          return 90;
+        }
+        return prev + 30;
+      });
+    }, 150);
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const resultUrl = reader.result as string;
+      setTimeout(() => {
+        clearInterval(progressTimer);
+        setInsuranceUploadProgress(100);
+        setTimeout(() => {
+          dataStore.updateVehicleDocument(vehicle.id, {
+            insuranceDocUrl: resultUrl,
+            insuranceStatus: "pending",
+            insuranceRejectionReason: undefined,
+            insuranceMinioKey: `minio://wheelzy-docs/vehicles/ins_${Date.now()}.pdf`,
+          });
+          setInsuranceUploadProgress(null);
+          reloadData();
+          toast.success("Insurance Policy uploaded! Submitted for administrative verification.");
+        }, 300);
+      }, 500);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const getDocStatusBadge = (status?: string) => {
+    switch (status) {
+      case "verified":
+        return (
+          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+            <Check size={11} className="stroke-[3]" />
+            <span>Verified</span>
+          </span>
+        );
+      case "pending":
+        return (
+          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+            <span>Pending Verification</span>
+          </span>
+        );
+      case "rejected":
+        return (
+          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-200">
+            <X size={11} className="stroke-[3]" />
+            <span>Rejected</span>
+          </span>
+        );
+      case "not_uploaded":
+      default:
+        return (
+          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200">
+            <span>Not Uploaded</span>
+          </span>
+        );
+    }
+  };
 
   // ----------------------------------------------------
   // TAB 2: RETURN TRACKING STATE & INSPECTION MODALS
@@ -1005,6 +1151,251 @@ function MyVehiclesContent() {
                           Students are required to upload a timestamped parking photo with GPS geofence evidence at the designated hub before return completion. You retain full authority to verify the photo before payout release.
                         </p>
                       </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Dedicated Vehicle Compliance Documents Section (RC & Insurance) ── */}
+              <div className="bg-white rounded-3xl border border-gray-200/90 p-6 sm:p-7 shadow-xs space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-gray-100">
+                  <div>
+                    <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                      <FileCheck2 size={18} className="text-emerald-700" />
+                      <span>Vehicle Compliance Documents (RC &amp; Insurance)</span>
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Upload and manage the Registration Certificate (RC) and active insurance policy for {vehicle.name}.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500">Fleet RC &amp; Insurance:</span>
+                    {vehicle.documents?.verified ? (
+                      <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        Verified &amp; Active ✓
+                      </span>
+                    ) : (
+                      <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                        Under Admin Review
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* ── Document 1: Registration Certificate (RC) ── */}
+                  <div className="bg-gray-50/60 rounded-3xl border border-gray-200/80 p-5 sm:p-6 flex flex-col justify-between space-y-4">
+                    <div className="space-y-3">
+                      {/* Header */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-100 shrink-0">
+                            <FileText size={20} />
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-bold text-gray-900">Registration Certificate (RC)</h4>
+                            <p className="text-[11px] text-gray-500">
+                              Government registration proof (Form 23).
+                            </p>
+                          </div>
+                        </div>
+                        {getDocStatusBadge(vehicle.documents?.rcStatus)}
+                      </div>
+
+                      {/* Rejection Alert if rejected */}
+                      {vehicle.documents?.rcStatus === "rejected" && (
+                        <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-start gap-2">
+                          <AlertCircle size={15} className="text-rose-600 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-bold">RC Verification Rejected</p>
+                            <p className="text-[11px] text-rose-700 mt-0.5">
+                              {vehicle.documents?.rcRejectionReason ||
+                                "The uploaded RC document is illegible or does not match the registered vehicle specs. Please upload a clear copy."}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Preview Box */}
+                      <div className="relative rounded-2xl border border-gray-200 overflow-hidden bg-white group">
+                        <div className="h-44 w-full flex items-center justify-center p-3 bg-gray-50/50">
+                          <img
+                            src={vehicle.documents?.rcDocUrl || "/vehicle_rc_proof.svg"}
+                            alt="RC Preview"
+                            className="max-h-full max-w-full object-contain rounded-lg shadow-2xs"
+                          />
+                        </div>
+                        <div className="px-3.5 py-2.5 bg-white border-t border-gray-100 flex items-center justify-between text-xs">
+                          <div className="truncate">
+                            <span className="font-mono text-[11px] font-bold text-gray-800">
+                              {vehicle.documents?.rcNumber || "RC-VERIFIED"}
+                            </span>
+                            <p className="text-[10px] text-gray-400">
+                              MinIO Secure Storage • Verified Fleet
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openDocPreview(
+                                "Registration Certificate (RC)",
+                                vehicle.documents?.rcDocUrl || "/vehicle_rc_proof.svg"
+                              )
+                            }
+                            className="px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-emerald-50 hover:text-emerald-800 text-gray-700 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                          >
+                            <Eye size={12} />
+                            <span>Inspect</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Upload Progress Bar */}
+                      {rcUploadProgress !== null && (
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-[11px] text-emerald-800 font-semibold">
+                            <span>Uploading RC to MinIO storage...</span>
+                            <span>{rcUploadProgress}%</span>
+                          </div>
+                          <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-emerald-600 transition-all duration-200"
+                              style={{ width: `${rcUploadProgress}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="pt-2 border-t border-gray-100">
+                      <input
+                        ref={rcFileInputRef}
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.pdf"
+                        onChange={handleRcFileChange}
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => rcFileInputRef.current?.click()}
+                        disabled={rcUploadProgress !== null}
+                        className="w-full py-2.5 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all shadow-2xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                      >
+                        <Upload size={14} />
+                        <span>
+                          {vehicle.documents?.rcDocUrl ? "Replace RC Document" : "Upload RC Document"}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* ── Document 2: Insurance Policy Document ── */}
+                  <div className="bg-gray-50/60 rounded-3xl border border-gray-200/80 p-5 sm:p-6 flex flex-col justify-between space-y-4">
+                    <div className="space-y-3">
+                      {/* Header */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-100 shrink-0">
+                            <ShieldCheck size={20} />
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-bold text-gray-900">Vehicle Insurance Policy</h4>
+                            <p className="text-[11px] text-gray-500">
+                              Comprehensive &amp; 3rd party liability coverage.
+                            </p>
+                          </div>
+                        </div>
+                        {getDocStatusBadge(vehicle.documents?.insuranceStatus)}
+                      </div>
+
+                      {/* Rejection Alert if rejected */}
+                      {vehicle.documents?.insuranceStatus === "rejected" && (
+                        <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-start gap-2">
+                          <AlertCircle size={15} className="text-rose-600 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-bold">Insurance Verification Rejected</p>
+                            <p className="text-[11px] text-rose-700 mt-0.5">
+                              {vehicle.documents?.insuranceRejectionReason ||
+                                "The policy document has expired or has missing policy details. Please upload an active insurance certificate."}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Preview Box */}
+                      <div className="relative rounded-2xl border border-gray-200 overflow-hidden bg-white group">
+                        <div className="h-44 w-full flex items-center justify-center p-3 bg-gray-50/50">
+                          <img
+                            src={vehicle.documents?.insuranceDocUrl || "/insurance_document_proof.svg"}
+                            alt="Insurance Preview"
+                            className="max-h-full max-w-full object-contain rounded-lg shadow-2xs"
+                          />
+                        </div>
+                        <div className="px-3.5 py-2.5 bg-white border-t border-gray-100 flex items-center justify-between text-xs">
+                          <div className="truncate">
+                            <span className="font-mono text-[11px] font-bold text-gray-800">
+                              {vehicle.documents?.insurancePolicyNumber || "POL-WHEELZY-8819"}
+                            </span>
+                            <p className="text-[10px] text-gray-400">
+                              Expiry: {vehicle.documents?.insuranceExpiry || "2027-05-15"} • Encrypted MinIO Key
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openDocPreview(
+                                "Vehicle Insurance Policy Document",
+                                vehicle.documents?.insuranceDocUrl || "/insurance_document_proof.svg"
+                              )
+                            }
+                            className="px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-emerald-50 hover:text-emerald-800 text-gray-700 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                          >
+                            <Eye size={12} />
+                            <span>Inspect</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Upload Progress Bar */}
+                      {insuranceUploadProgress !== null && (
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-[11px] text-emerald-800 font-semibold">
+                            <span>Uploading Insurance to MinIO storage...</span>
+                            <span>{insuranceUploadProgress}%</span>
+                          </div>
+                          <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-emerald-600 transition-all duration-200"
+                              style={{ width: `${insuranceUploadProgress}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="pt-2 border-t border-gray-100">
+                      <input
+                        ref={insuranceFileInputRef}
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.pdf"
+                        onChange={handleInsuranceFileChange}
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => insuranceFileInputRef.current?.click()}
+                        disabled={insuranceUploadProgress !== null}
+                        className="w-full py-2.5 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all shadow-2xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                      >
+                        <Upload size={14} />
+                        <span>
+                          {vehicle.documents?.insuranceDocUrl
+                            ? "Replace Insurance Document"
+                            : "Upload Insurance Document"}
+                        </span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -1749,6 +2140,31 @@ function MyVehiclesContent() {
                   {vehicle.documents?.insuranceExpiry || "2027-12-31"}
                 </p>
               </div>
+
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsDetailsModalOpen(false);
+                    openDocPreview("Registration Certificate (RC)", vehicle.documents?.rcDocUrl || "/vehicle_rc_proof.svg");
+                  }}
+                  className="p-2.5 rounded-xl border border-gray-200 bg-gray-50 hover:bg-emerald-50 text-gray-800 hover:text-emerald-900 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Eye size={12} className="text-emerald-700" />
+                  <span>Inspect RC Document</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsDetailsModalOpen(false);
+                    openDocPreview("Vehicle Insurance Policy", vehicle.documents?.insuranceDocUrl || "/insurance_document_proof.svg");
+                  }}
+                  className="p-2.5 rounded-xl border border-gray-200 bg-gray-50 hover:bg-emerald-50 text-gray-800 hover:text-emerald-900 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Eye size={12} className="text-emerald-700" />
+                  <span>Inspect Insurance</span>
+                </button>
+              </div>
             </div>
 
             <DialogFooter>
@@ -1884,6 +2300,41 @@ function MyVehiclesContent() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* ── MODAL 6: VEHICLE DOCUMENT FULLSCREEN PREVIEW MODAL ── */}
+      <Dialog open={docPreviewModalOpen} onOpenChange={setDocPreviewModalOpen}>
+        <DialogContent className="max-w-xl w-[95vw] rounded-3xl bg-white p-6 shadow-2xl border border-gray-200 font-sans">
+          <DialogHeader className="border-b border-gray-100 pb-3 flex flex-row items-center justify-between">
+            <DialogTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
+              <FileCheck2 size={16} className="text-emerald-700" />
+              <span>{docPreviewTitle}</span>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="py-4">
+            <div className="max-h-[60vh] overflow-auto flex items-center justify-center bg-gray-50 rounded-2xl border border-gray-200 p-3">
+              <img
+                src={docPreviewUrl}
+                alt={docPreviewTitle}
+                className="max-h-[50vh] max-w-full object-contain rounded-lg"
+              />
+            </div>
+            <p className="text-[11px] text-gray-400 text-center mt-3">
+              Official campus micro-mobility fleet verification document • Encrypted MinIO storage
+            </p>
+          </div>
+
+          <div className="pt-2 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setDocPreviewModalOpen(false)}
+              className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold transition-colors cursor-pointer"
+            >
+              Close
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

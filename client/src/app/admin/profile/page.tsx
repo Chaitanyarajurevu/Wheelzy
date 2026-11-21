@@ -83,22 +83,28 @@ export default function AdminProfilePage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-gray-900 tracking-tight">System Administrator Profile</h1>
-          <p className="text-xs text-gray-500 mt-1">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">
+              Platform Command &amp; Clearance
+            </span>
+          </div>
+          <h1 className="text-xl font-bold text-gray-900">Administrator Profile</h1>
+          <p className="text-xs text-gray-500 mt-0.5">
             Platform command center authority, audit clearance, and security configurations.
           </p>
         </div>
 
         <Link
-          href="/admin/dashboard"
-          className="px-4 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-xs font-bold text-gray-700 shadow-2xs transition-colors self-start sm:self-auto"
+          href="/admin"
+          className="px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-xs font-semibold text-gray-700 shadow-2xs transition-colors self-start sm:self-auto"
         >
-          ← Return to Admin Dashboard
+          ← Return to Dashboard
         </Link>
       </div>
 
       {/* Top Profile Summary Card */}
-      <div className="bg-white rounded-3xl border border-gray-100 p-6 sm:p-7 shadow-sm space-y-6">
+      <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 pb-6 border-b border-gray-100">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#064E3B] to-[#059669] text-white flex items-center justify-center text-xl font-black shadow-md shadow-emerald-950/20 ring-4 ring-emerald-50">
@@ -158,7 +164,7 @@ export default function AdminProfilePage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Left: Administrator Details */}
-        <div className="lg:col-span-7 bg-white rounded-3xl border border-gray-100 p-6 sm:p-7 shadow-sm space-y-5">
+        <div className="lg:col-span-7 bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-5">
           <div className="border-b border-gray-100 pb-3">
             <h3 className="text-sm font-bold text-gray-900">Administrator Contact Details</h3>
             <p className="text-xs text-gray-500">Internal campus security and command center credentials.</p>
@@ -223,7 +229,7 @@ export default function AdminProfilePage() {
               <button
                 type="submit"
                 disabled={isSaving}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
                 <Save size={14} />
                 <span>{isSaving ? "Saving..." : "Save Admin Credentials"}</span>
@@ -258,7 +264,7 @@ export default function AdminProfilePage() {
         </div>
 
         {/* Right: Security Settings & Multi-Factor Auth */}
-        <div className="lg:col-span-5 bg-white rounded-3xl border border-gray-100 p-6 sm:p-7 shadow-sm space-y-5">
+        <div className="lg:col-span-5 bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-5">
           <div className="border-b border-gray-100 pb-3">
             <h3 className="text-sm font-bold text-gray-900">Admin Passphrase & Multi-Factor Auth</h3>
             <p className="text-xs text-gray-500">Hardware token and administrative password management.</p>

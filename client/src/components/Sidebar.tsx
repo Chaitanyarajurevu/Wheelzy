@@ -28,6 +28,7 @@ export default function Sidebar({ role, isOpen = false, onClose }: SidebarProps)
   const config = roleConfig[role];
   const { user, logout } = useAuth();
   const [activeRideCount, setActiveRideCount] = useState<number>(0);
+  const [pendingVerifCount, setPendingVerifCount] = useState<number>(0);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
@@ -41,6 +42,9 @@ export default function Sidebar({ role, isOpen = false, onClose }: SidebarProps)
         const renterId = user && user.role === "renter" ? user.id : "usr-renter-priya";
         const count = dataStore.getRenterBookings(renterId).filter((b) => b.status === "active").length;
         setActiveRideCount(count);
+      } else if (role === "system_admin") {
+        const count = dataStore.getVerifications().filter((v) => v.status === "pending").length;
+        setPendingVerifCount(count);
       }
     };
     updateCounts();
@@ -157,6 +161,13 @@ export default function Sidebar({ role, isOpen = false, onClose }: SidebarProps)
           let active = false;
           if (item.href === "/admin/dashboard") {
             active = pathname === "/admin" || pathname === "/admin/dashboard";
+          } else if (item.href === "/admin/verification") {
+            active =
+              pathname === "/admin/verification" ||
+              pathname?.startsWith("/admin/verification/") ||
+              pathname === "/admin/student-verification" ||
+              pathname === "/admin/license-verification" ||
+              pathname === "/admin/vehicle-verification";
           } else if (item.href === "/owner/dashboard") {
             active = pathname === "/owner" || pathname === "/owner/dashboard";
           } else if (item.href === "/renter/dashboard") {
@@ -190,13 +201,16 @@ export default function Sidebar({ role, isOpen = false, onClose }: SidebarProps)
                 pathname?.startsWith(item.href + "/"));
           }
 
-          const badgeText = isSpecialActiveRides
-            ? activeRideCount > 0
-              ? `${activeRideCount}`
-              : null
-            : item.badge
-            ? "●"
-            : null;
+          const badgeText =
+            item.href === "/admin/verification"
+              ? pendingVerifCount > 0
+                ? `${pendingVerifCount}`
+                : undefined
+              : isSpecialActiveRides
+              ? activeRideCount > 0
+                ? `${activeRideCount}`
+                : undefined
+              : item.badge;
 
           return (
             <Link
